@@ -6537,7 +6537,7 @@
 			}
 		}
 
-		public function getPatientsFeesWardServicesPartFeePaying($company_id,$health_facility_id, $days_num){
+		public function getPatientsFeesClinicServicesPartFeePaying($company_id,$health_facility_id, $start_date, $end_date){
 	    	//get all codes of this company id
 	    	// $ret = array();
 	    	// $codes = array();
@@ -6573,14 +6573,17 @@
 	    	$query_str = "SELECT
 					
 			        i.company_id,
-			        j.title,
-			        j.first_name,
-			        j.last_name,
+			        CONCAT_WS(' ', j.title, j.first_name, j.last_name) AS patient_full_name,
+			       
 			        j.sex,
 			        j.dob,
 			        h.user_name,
 			        h.slug,
-			        
+			        p.registration_num,
+			        n.slug AS teller_user_slug,
+                	n.user_name AS teller_user_name,
+			        ws.name AS service_name,
+			        s.name AS clinic_name,
                     l.*
 
 			        
@@ -6590,8 +6593,147 @@
                      user_id,
                      date_paid,
 			            health_facility_id,
+			            ward_service_id,
+			            insurance_code,
+			            teller_id,
+			            sub_dept_id
+                     
+			        FROM
+			            clinic_services_requested 
+			        WHERE
+			            health_facility_id = $health_facility_id 
+			            AND clinic_services_requested.paid = 1          
+			            AND clinic_services_requested.user_type = 'pfp'
+			            AND clinic_services_requested.receipt_file != ''
+
+                     	AND (STR_TO_DATE(date_paid, '%d %b %Y %h:%i:%s%p') BETWEEN '$start_date' AND '$end_date')
+                     
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        clinic_services_requested AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    INNER JOIN
+			        verification_codes_records AS i 
+			            ON (
+			                k.insurance_code = i.code
+			            ) AND
+
+			            (
+			            	k.health_facility_id = i.health_facility_id
+			            ) AND
+
+			            (
+			            	i.taken = 1
+			            ) AND
+
+			            (
+			            	i.company_id = '$company_id'
+			            ) 
+			    INNER JOIN
+			        patients AS j
+			            ON (
+			                k.user_id = j.user_id
+			            )
+			    INNER JOIN 
+               		patients_in_facility AS p
+                    	ON ( 
+                    		k.user_id = p.user_id 
+                    	)   
+			    INNER JOIN
+			        users AS h
+			            ON (
+			                k.user_id = h.id
+			            )
+			    INNER JOIN 
+               		users AS n
+                    	ON ( 
+                    		k.teller_id = n.id 
+                    	)
+                INNER JOIN 
+               		sub_dept AS s
+                    	ON ( 
+                    		k.sub_dept_id = s.id 
+                    	)
+			    INNER JOIN 
+			    	ward_services AS ws
+			    		ON (
+			    			k.ward_service_id = ws.id
+			    		) 
+			    		AND(
+			    			k.health_facility_id = ws.health_facility_id
+			    		)
 			            
-			            insurance_code
+					";
+			$query = $this->db->query($query_str);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return false;
+			}
+
+	    }
+
+		public function getPatientsFeesWardServicesPartFeePaying($company_id,$health_facility_id, $start_date, $end_date){
+	    	//get all codes of this company id
+	    	// $ret = array();
+	    	// $codes = array();
+	    	// $query = $this->db->get_where("verification_codes_records",array('company_id' => $company_id,'health_facility_id' => $health_facility_id,'taken' => 1));
+	    	// if($query->num_rows() > 0){
+	    	// 	foreach($query->result() as $row){
+	    	// 		$code = $row->code;
+	    	// 		$codes[] = $code;
+	    	// 	}
+	    	// }
+
+
+	    	// if(count($codes) > 0){
+	    	// 	for($i = 0; $i < count($codes); $i++){
+	    	// 		$code = $codes[$i];
+
+		    // 		$query = $this->db->get_where("ward_services_requested",array('insurance_code' => $code,'health_facility_id' => $health_facility_id,'user_type' => 'pfp','paid' => 1,'receipt_file !=' => ''));
+		    // 		if($query->num_rows() > 0){
+		    // 			$consultation_ids = array();
+		    // 			foreach($query->result() as $row){
+		    // 				$id = $row->id;
+		    // 				$consultation_ids[] = $id;
+		    // 			}
+		    // 			$ret = array_merge($ret,$consultation_ids);
+		    // 		}
+		    // 	}
+	    	// }
+
+	    	// // var_dump($ret);
+
+	    	// return $ret;
+
+	    	$query_str = "SELECT
+					
+			        i.company_id,
+			        CONCAT_WS(' ', j.title, j.first_name, j.last_name) AS patient_full_name,
+			       
+			        j.sex,
+			        j.dob,
+			        h.user_name,
+			        h.slug,
+			        p.registration_num,
+			        n.slug AS teller_user_slug,
+                	n.user_name AS teller_user_name,
+			        ws.name AS service_name,
+                    l.*
+
+			        
+			    FROM
+			        (SELECT
+			            id,
+                     user_id,
+                     date_paid,
+			            health_facility_id,
+			            ward_service_id,
+			            insurance_code,
+			            teller_id
                      
 			        FROM
 			            ward_services_requested 
@@ -6600,7 +6742,8 @@
 			            AND ward_services_requested.paid = 1          
 			            AND ward_services_requested.user_type = 'pfp'
 			            AND ward_services_requested.receipt_file != ''
-                     	AND STR_TO_DATE(date_paid, '%d %b %Y') > CURDATE() - INTERVAL $days_num DAY
+
+                     	AND (STR_TO_DATE(date_paid, '%d %b %Y %h:%i:%s%p') BETWEEN '$start_date' AND '$end_date')
                      
 			        ORDER BY
 			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
@@ -6630,13 +6773,30 @@
 			        patients AS j
 			            ON (
 			                k.user_id = j.user_id
-			            )   
+			            )
+			    INNER JOIN 
+               		patients_in_facility AS p
+                    	ON ( 
+                    		k.user_id = p.user_id 
+                    	)   
 			    INNER JOIN
 			        users AS h
 			            ON (
 			                k.user_id = h.id
 			            )
-			    
+			    INNER JOIN 
+               		users AS n
+                    	ON ( 
+                    		k.teller_id = n.id 
+                    	)
+			    INNER JOIN 
+			    	ward_services AS ws
+			    		ON (
+			    			k.ward_service_id = ws.id
+			    		) 
+			    		AND(
+			    			k.health_facility_id = ws.health_facility_id
+			    		)
 			            
 					";
 			$query = $this->db->query($query_str);
@@ -6671,6 +6831,76 @@
 	    	}
 
 	    	return $num;
+	    }
+
+	    public function getCompaniesClinicServicesPartFeePaying($health_facility_id){
+	    	// $ret = array();
+			// $this->db->select("*");
+			// $this->db->from("ward_services_requested");
+			// $this->db->where("paid",1);
+			// $this->db->where("user_type","pfp");
+			// $this->db->where("health_facility_id",$health_facility_id);
+			// $this->db->where("receipt_file !=","");
+			
+			// $query = $this->db->get();
+			// if($query->num_rows() > 0){
+			// 	foreach($query->result() as $row){
+			// 		$insurance_code = $row->insurance_code;
+			// 		$company_id = $this->onehealth_model->getCompanyIdByInsuranceCode($insurance_code,$health_facility_id);
+
+			// 		$ret[] = $company_id;
+			// 	}
+			// }
+
+			// return array_values(array_unique($ret));
+
+			$query_str = "SELECT
+					
+			        i.company_id,
+			        COUNT(k.id) as no_of_payments
+			    FROM
+			        (SELECT
+			            id,
+			            health_facility_id,
+			            insurance_code
+			        FROM
+			            clinic_services_requested 
+			        WHERE
+			            health_facility_id = ".$health_facility_id." 
+			            AND clinic_services_requested.paid = 1          
+			            AND clinic_services_requested.user_type = 'pfp'
+			            AND clinic_services_requested.receipt_file != ''
+			            
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        clinic_services_requested AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    INNER JOIN
+			        verification_codes_records AS i 
+			            ON (
+			                k.insurance_code = i.code
+			            ) AND
+
+			            (
+			            	k.health_facility_id = i.health_facility_id
+			            ) AND
+
+			            (
+			            	i.taken = 1
+			            )  
+
+			         GROUP BY i.company_id ";
+			$query = $this->db->query($query_str);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return false;
+			}
+
+
 	    }
 
 		public function getCompaniesWardServicesPartFeePaying($health_facility_id){
@@ -6743,13 +6973,206 @@
 
 	    }
 
-		public function getPatientsWardServicesFullPaying($health_facility_id){
-			$query = $this->db->get_where("ward_services_requested",array('health_facility_id' => $health_facility_id,'user_type' => 'fp','paid' => 1,'receipt_file !=' => ''));
+	    public function getPatientsClinicServicesFullPaying($health_facility_id, $start_date, $end_date){
+			// $query = $this->db->get_where("ward_services_requested",array('health_facility_id' => $health_facility_id,'user_type' => 'fp','paid' => 1,'receipt_file !=' => ''));
+			// if($query->num_rows() > 0){
+			// 	return $query->result();
+			// }else{
+			// 	return false;
+			// }
+
+
+			$query_str = "SELECT
+					
+		        l.id,
+           		j.registration_num,
+           		CONCAT_WS(' ', i.title, i.first_name, i.last_name) AS patient_full_name,
+                i.sex,
+                i.dob,
+                m.user_name,
+                m.slug,
+                n.slug AS teller_slug,
+                n.user_name AS teller_user_name,
+                
+                ws.name AS service_name,
+                s.name AS clinic_name,
+                l.*
+			        
+			        
+			    FROM
+			        (SELECT
+			            id,
+                     	user_id,
+                        teller_id,
+                        ward_service_id,
+                        health_facility_id,
+                        sub_dept_id
+                     
+			        FROM
+			            clinic_services_requested 
+			        WHERE
+			            health_facility_id = $health_facility_id 
+			           AND user_type = 'fp'
+                       AND paid = 1
+                       AND receipt_file != ''
+
+                     	AND (STR_TO_DATE(date_paid, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
+                     
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        clinic_services_requested AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    
+
+           		LEFT JOIN 
+           			patients AS i
+	                  	ON ( 
+	                  		k.user_id = i.user_id 
+	                  	)
+               	LEFT JOIN 
+               		patients_in_facility AS j
+                    	ON ( 
+                    		k.user_id = j.user_id 
+                    	)
+               	LEFT JOIN 
+               		users AS m
+                      	ON ( 
+                      		k.user_id = m.id 
+                      	)
+               LEFT JOIN 
+               		users AS n
+                    	ON ( 
+                    		k.teller_id = n.id 
+                    	)
+               
+                LEFT JOIN 
+               		ward_services AS ws
+                     	ON ( 
+                     		k.ward_service_id = ws.id 
+                     	)
+                     	AND (
+                     		k.health_facility_id = ws.health_facility_id
+                     	)
+                LEFT JOIN 
+               		sub_dept AS s
+                     	ON ( 
+                     		k.sub_dept_id = s.id 
+                     	)
+                     	
+			    
+			       ORDER BY l.id DESC     
+					";
+			$query = $this->db->query($query_str);
 			if($query->num_rows() > 0){
 				return $query->result();
 			}else{
 				return false;
 			}
+
+		}
+
+		public function getPatientsWardServicesFullPaying($health_facility_id, $start_date, $end_date){
+			// $query = $this->db->get_where("ward_services_requested",array('health_facility_id' => $health_facility_id,'user_type' => 'fp','paid' => 1,'receipt_file !=' => ''));
+			// if($query->num_rows() > 0){
+			// 	return $query->result();
+			// }else{
+			// 	return false;
+			// }
+
+
+			$query_str = "SELECT
+					
+		        l.id,
+           		j.registration_num,
+           		CONCAT_WS(' ', i.title, i.first_name, i.last_name) AS patient_full_name,
+                i.sex,
+                i.dob,
+                m.user_name,
+                m.slug,
+                n.slug AS teller_slug,
+                n.user_name AS teller_user_name,
+                o.sub_dept_id AS ward_id,
+                ws.name AS service_name,
+                l.*
+			        
+			        
+			    FROM
+			        (SELECT
+			            id,
+                     	user_id,
+                        teller_id,
+                        ward_service_id,
+                        health_facility_id,
+                        ward_record_id
+                     
+			        FROM
+			            ward_services_requested 
+			        WHERE
+			            health_facility_id = $health_facility_id 
+			           AND user_type = 'fp'
+                       AND paid = 1
+                       AND receipt_file != ''
+
+                     	AND (STR_TO_DATE(date_paid, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
+                     
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        ward_services_requested AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    
+
+           		LEFT JOIN 
+           			patients AS i
+	                  	ON ( 
+	                  		k.user_id = i.user_id 
+	                  	)
+               	LEFT JOIN 
+               		patients_in_facility AS j
+                    	ON ( 
+                    		k.user_id = j.user_id 
+                    	)
+               	LEFT JOIN 
+               		users AS m
+                      	ON ( 
+                      		k.user_id = m.id 
+                      	)
+               LEFT JOIN 
+               		users AS n
+                    	ON ( 
+                    		k.teller_id = n.id 
+                    	)
+               LEFT JOIN 
+               		wards AS o
+                     	ON ( 
+                     		k.ward_record_id = o.id 
+                     	)
+                     	AND (
+                     		k.health_facility_id = o.health_facility_id
+                     	)
+                LEFT JOIN 
+               		ward_services AS ws
+                     	ON ( 
+                     		k.ward_service_id = ws.id 
+                     	)
+                     	AND (
+                     		k.health_facility_id = ws.health_facility_id
+                     	)
+			    
+			       ORDER BY l.id DESC     
+					";
+			$query = $this->db->query($query_str);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return false;
+			}
+
 		}
 
 		public function updateWardsServicesRequestedById($form_array,$id,$health_facility_id){
@@ -7825,7 +8248,7 @@
                        AND appointment_date = ''
                        AND sub_dept_id = $sub_dept_id
 
-                     	AND (STR_TO_DATE(nurse_date_time, '%d %b %Y %h:%i:%s%p') BETWEEN '$start_date' AND '$end_date')
+                     	AND (STR_TO_DATE(nurse_date_time, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
                      
 			        ORDER BY
 			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
@@ -8303,7 +8726,7 @@
                        AND appointment_date = ''
                        AND sub_dept_id = $sub_dept_id
 
-                     	AND (STR_TO_DATE(nurse_date_time, '%d %b %Y %h:%i:%s%p') BETWEEN '$start_date' AND '$end_date')
+                     	AND (STR_TO_DATE(nurse_date_time, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
                      
 			        ORDER BY
 			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
@@ -8339,6 +8762,101 @@
                       	ON (
                       		k.nurse_id = p.id 
                       	)
+               LEFT JOIN 
+               		sub_dept AS o
+                     	ON ( 
+                     		k.sub_dept_id = o.id 
+                     	)
+			    
+			       ORDER BY l.id DESC     
+					";
+			$query = $this->db->query($query_str);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return false;
+			}
+
+		}
+
+		public function getConsultationsOfOffAppointmentClinicNurse($health_facility_id,$sub_dept_id, $start_date, $end_date){
+			$clinic_structure = $this->onehealth_model->getHealthFacilityParamById("clinic_structure",$health_facility_id);
+
+
+		    if($clinic_structure == "mini"){
+				$sub_dept_id = "55";
+			}
+			$query_str = "SELECT
+					
+		        l.id,
+		        
+           		CONCAT_WS(' ', l.date, l.time) AS date_time,
+           		l.user_id,
+           		j.registration_num,
+           		CONCAT_WS(' ', i.title, i.first_name, i.last_name) AS patient_full_name,
+                i.sex,
+                i.dob,
+                m.user_name,
+                m.slug,
+                n.slug AS records_officer_slug,
+                n.user_name AS records_officer_username
+                
+
+			        
+			        
+			    FROM
+			        (SELECT
+			            id,
+                     	user_id,
+                        records_officer,
+                        sub_dept_id
+                     
+			        FROM
+			            clinic_consultations 
+			        WHERE
+			            health_facility_id = $health_facility_id 
+			            AND id IN (SELECT id
+                                  FROM   clinic_consultations t
+                                  WHERE  id > (SELECT Min(id)
+                                               FROM   clinic_consultations t2
+                                               WHERE  t2.user_id = t.user_id))
+                       AND consultation_paid = 1
+                       AND nurse_registered = 0
+                       AND appointment_date = ''
+                       AND sub_dept_id = $sub_dept_id
+
+                     	AND (STR_TO_DATE(date, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
+                     
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        clinic_consultations AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    
+
+           		LEFT JOIN 
+           			patients AS i
+	                  	ON ( 
+	                  		k.user_id = i.user_id 
+	                  	)
+               	LEFT JOIN 
+               		patients_in_facility AS j
+                    	ON ( 
+                    		k.user_id = j.user_id 
+                    	)
+               	LEFT JOIN 
+               		users AS m
+                      	ON ( 
+                      		k.user_id = m.id 
+                      	)
+               LEFT JOIN 
+               		users AS n
+                    	ON ( 
+                    		k.records_officer = n.id 
+                    	)
+               
                LEFT JOIN 
                		sub_dept AS o
                      	ON ( 
@@ -8810,7 +9328,7 @@
             }else{
             	// $query_str .= " AND STR_TO_DATE(consultation_payment_date, '%d %b %Y %h:%i:%s%p') > CURDATE() - INTERVAL $days_num DAY ";
 
-            	$query_str .= " AND (STR_TO_DATE(consultation_payment_date, '%d %b %Y %h:%i:%s%p') BETWEEN '$start_date' AND '$end_date') ";
+            	$query_str .= " AND (STR_TO_DATE(consultation_payment_date, '%d %b %Y') BETWEEN '$start_date' AND '$end_date') ";
             }
 
             
@@ -9006,7 +9524,7 @@
 			            AND clinic_consultations.consultation_paid = 1          
 			            AND clinic_consultations.payment_type = 'pay now'
 			            AND clinic_consultations.user_type = 'fp'
-			         	AND (STR_TO_DATE(consultation_payment_date, '%d %b %Y %h:%i:%s%p') BETWEEN '$start_date' AND '$end_date')
+			         	AND (STR_TO_DATE(consultation_payment_date, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
                      	
                      	ORDER BY
 			            id DESC LIMIT 100000000000 OFFSET 0) AS k         

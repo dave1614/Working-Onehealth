@@ -73,6 +73,10 @@
     $("#choose-patient-type-services").modal("show");
   }
 
+  function viewClinicServices (elem,evt) {
+    $("#choose-patient-type-services-clinic").modal("show");
+  }
+
   function viewOutstandingBillsCollected (elem,evt) {
     $(".spinner-overlay").show();
         
@@ -1366,8 +1370,109 @@
     });
   }
 
+  function viewFullPayingClinicServices (elem,evt) {
+    
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_clinic_services_fees_full_paying'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true && response.messages != ""){
+          var messages = response.messages;
+          $("#choose-patient-type-services-clinic").modal("hide");
+          $("#hospital-teller-card").hide();
+          $("#view-clinic-services-payments-card .card-title").html("Clinic Service Payments For Full Paying Patients");
+          $("#view-clinic-services-payments-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-clinic-services-payments-card #services-table").DataTable();
+          $("#view-clinic-services-payments-card").show();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectTimeRangeClinicServicesChangedFullPaying(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_clinic_services_fees_full_paying'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#view-clinic-services-payments-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-clinic-services-payments-card #services-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+
   function viewFullPayingWardServices (elem,evt) {
     
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
         
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_ward_services_fees_full_paying'); ?>";
@@ -1377,7 +1482,7 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num=1",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
@@ -1387,8 +1492,8 @@
           $("#hospital-teller-card").hide();
           $("#view-services-payments-card .card-title").html("Ward Service Payments For Full Paying Patients");
           $("#view-services-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#services-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-services-payments-card #services-table").DataTable();
           $("#view-services-payments-card").show();
         }
         else{
@@ -1411,7 +1516,12 @@
   }
 
   function selectTimeRangeWardServicesChangedFullPaying(elem,event){
-    var days_num = $(elem).val();
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+
+    console.log(start_date)
+    console.log(end_date)
     
     $(".spinner-overlay").show();
         
@@ -1422,15 +1532,15 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-services-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#services-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-services-payments-card #services-table").DataTable();
         }
         else{
          $.notify({
@@ -1455,6 +1565,55 @@
     $("#choose-patient-type-services").modal("show");
     $("#hospital-teller-card").show();
     $("#view-services-payments-card").hide();
+  }
+
+  function goBackFromViewClinicServicesPaymentsCard (elem,evt) {
+    $("#choose-patient-type-services-clinic").modal("show");
+    $("#hospital-teller-card").show();
+    $("#view-clinic-services-payments-card").hide();
+  }
+
+  function viewPartPayingClinicServices (elem,evt) {
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_companies_with_part_payment_clinic_services'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true",
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true && response.messages != ""){
+          var messages = response.messages;
+          $("#choose-patient-type-services-clinic").modal("hide");
+          $("#hospital-teller-card").hide();
+          $("#clinic-services-companies-card .card-title").html("Insurance And Retainership Clinic Services Bills(Part Fee Paying)");
+          $("#clinic-services-companies-card .card-body").html(messages);
+          
+          $("#clinic-services-companies-card #clinic-services-companies-table").DataTable();
+          $("#clinic-services-companies-card").show();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
   }
 
   function viewPartPayingWardServices (elem,evt) {
@@ -1500,6 +1659,14 @@
     });
   }
 
+
+  function goBackFromClinicServicesCompaniesCard (elem,evt) {
+    $("#choose-patient-type-services-clinic").modal("show");
+    $("#hospital-teller-card").show();
+    
+    $("#clinic-services-companies-card").hide();
+  }
+
   function goBackFromWardServicesCompaniesCard (elem,evt) {
     $("#choose-patient-type-services").modal("show");
     $("#hospital-teller-card").show();
@@ -1507,8 +1674,109 @@
     $("#ward-services-companies-card").hide();
   }
 
+  function viewPartPayingClinicServicesPaymentsInfo (elem,evt) {
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    var company_id = elem.attr("data-company-id");
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_clinic_services_fees_by_company_id_part_paying'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#clinic-services-companies-card").hide();
+          $("#view-clinic-services-payments-hmo-card .card-title").html("Clinic Services Payments For Part Payment Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
+          $("#view-clinic-services-payments-hmo-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-clinic-services-payments-hmo-card #services-table").DataTable();
+          $("#view-clinic-services-payments-hmo-card").show();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectTimeRangeClinicServicesChangedPartPaying(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_clinic_services_fees_by_company_id_part_paying'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#view-clinic-services-payments-hmo-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-clinic-services-payments-hmo-card #services-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+
   function viewPartPayingWardServicesPaymentsInfo (elem,evt) {
     elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
     var company_id = elem.attr("data-company-id");
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_ward_services_fees_by_company_id_part_paying'); ?>";
@@ -1518,18 +1786,18 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num=1&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#ward-services-companies-card").hide();
           $("#view-services-payments-hmo-card .card-title").html("Ward Services Payments For Part Payment Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
           $("#view-services-payments-hmo-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#services-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-services-payments-hmo-card #services-table").DataTable();
           $("#view-services-payments-hmo-card").show();
         }
         else{
@@ -1552,8 +1820,14 @@
   }
 
   function selectTimeRangeWardServicesChangedPartPaying(elem,event){
-    var days_num = $(elem).val();
-    var company_id = $(elem).attr("data-company-id");
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
     
     $(".spinner-overlay").show();
         
@@ -1564,15 +1838,15 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num+"&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-services-payments-hmo-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#services-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-services-payments-hmo-card #services-table").DataTable();
         }
         else{
          $.notify({
@@ -1591,6 +1865,11 @@
         });
       }
     });
+  }
+
+  function goBackFromViewClinicServicesPaymentsHmoCard (elem,evt) {
+    $("#clinic-services-companies-card").show();
+    $("#view-clinic-services-payments-hmo-card").hide();
   }
 
   function goBackFromViewServicesPaymentsHmoCard (elem,evt) {
@@ -4007,6 +4286,16 @@
                 </div>
               </div>
 
+              <div class="card" id="view-clinic-services-payments-hmo-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromViewClinicServicesPaymentsHmoCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
               <div class="card" id="view-services-payments-hmo-card" style="display: none;">
                 <div class="card-header">
                   <button class="btn btn-round btn-warning" onclick="goBackFromViewServicesPaymentsHmoCard(this,event)">Go Back</button>
@@ -4016,6 +4305,17 @@
 
                 </div>
               </div>
+
+              <div class="card" id="clinic-services-companies-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromClinicServicesCompaniesCard(this,event)">Go Back</button>
+                  <h3 class="card-title" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
 
               <div class="card" id="ward-services-companies-card" style="display: none;">
                 <div class="card-header">
@@ -4133,6 +4433,10 @@
                       </tr>
                       <tr class="pointer-cursor">
                         <td>5</td>
+                        <td><a href="#" onclick="viewClinicServices(this,event)">Clinic Services</a></td>
+                      </tr>
+                      <tr class="pointer-cursor">
+                        <td>6</td>
                         <td><a href="#" onclick="viewOutstandingBillsCollected(this,event)">Outstanding Bills Collected</a></td>
                       </tr>
                       
@@ -4223,6 +4527,16 @@
               <div class="card" id="view-admission-payments-card" style="display: none;">
                 <div class="card-header">
                   <button class="btn btn-round btn-warning" onclick="goBackFromViewAdmissionPaymentsCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+               <div class="card" id="view-clinic-services-payments-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromViewClinicServicesPaymentsCard(this,event)">Go Back</button>
                   <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
                 </div>
                 <div class="card-body">
@@ -4416,6 +4730,34 @@
                   </p>
                   <p>
                     <button class="btn btn-success" onclick="viewNonePayingOutstanding(this,event)">None Paying</button>
+                  </p>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-danger" data-dismiss="modal" >Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" data-backdrop="static" id="choose-patient-type-services-clinic" data-focus="true" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title">View Clinic Services Payments Of Patients That Are: </h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close" >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                  <p>
+                    <button class="btn btn-primary" onclick="viewFullPayingClinicServices(this,event)">Full Paying</button>
+                  </p>
+                  <p>
+                    <button class="btn btn-info" onclick="viewPartPayingClinicServices(this,event)">Part Paying</button>
+                  </p>
+                  <p>
+                    <button class="btn btn-success" onclick="viewNonePayingClinicServices(this,event)">None Paying</button>
                   </p>
                 </div>
 

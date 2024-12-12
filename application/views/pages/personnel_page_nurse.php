@@ -46,6 +46,29 @@
   var patient_user_id = "";
   var current_card = "";
 
+  function getTodayCurrentFullDate(){
+    var date = new Date();
+
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
+
+   function getYesterdayCurrentFullDate(){
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+
+    // let day = date.getDate();
+    // let month = date.getMonth() + 1;
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
+
   function viewPreviousNotes (elem,evt) {
     
     
@@ -305,129 +328,182 @@
 
   }
 
-  function offAppointment (elem,evt) {
-    evt.preventDefault();
-    // $(".spinner-overlay").show();
-          
-    // current_card = "off-appointment-patient-card";
-    // var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/view_off_appointments_clinic_nurse'); ?>";
+  function selectTimeRangeOffAppointment(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
     
-    // $.ajax({
-    //   url : url,
-    //   type : "POST",
-    //   responseType : "json",
-    //   dataType : "json",
-    //   data : "show_records=true",
-    //   success : function (response) {
-    //     console.log(response)
-    //     $(".spinner-overlay").hide();
-    //     if(response.success == true){
-    //       $("#off-appointment-patients-card .card-body").html(response.messages);
-    //       $("#choose-action-card").hide();
-    //       $("#off-appointment-patients-card").show();
-    //       $("#off-appointment-patients-card #off-appointment-patients-table").DataTable();
-    //     }
-    //     else{
-    //       $.notify({
-    //       message: "No Data To Display"
-    //       },{
-    //         type : "warning"  
-    //       });
-    //     }
-    //   },
-    //   error: function (jqXHR,textStatus,errorThrown) {
-    //     $(".spinner-overlay").hide();
-    //     $.notify({
-    //     message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
-    //     },{
-    //       type : "danger"  
-    //     });
-    //   }
-    // }); 
 
+    console.log(start_date)
+    console.log(end_date)
+    
+    $(".spinner-overlay").show();
+        
     current_card = "off-appointment-patient-card";
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/view_off_appointments_clinic_nurse'); ?>";
     
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true && response.messages != ""){
+          var messages = response.messages;
+          $("#off-appointment-patients-card .card-body").html(response.messages);
+          
+          $("#off-appointment-patients-card #off-appointment-patients-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function offAppointment (elem,evt) {
+    evt.preventDefault();
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+          
+    current_card = "off-appointment-patient-card";
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/view_off_appointments_clinic_nurse'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          $("#off-appointment-patients-card .card-body").html(response.messages);
+          $("#choose-action-card").hide();
+          $("#off-appointment-patients-card").show();
+          $("#off-appointment-patients-card #off-appointment-patients-table").DataTable();
+        }
+        else{
+          $.notify({
+          message: "No Data To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    }); 
+
+    // current_card = "off-appointment-patient-card";
+    // var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/view_off_appointments_clinic_nurse'); ?>";
+    
     
 
-    $("#choose-action-card").hide();
-    var html = `<div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="off-appointment-patients-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">Records Officer</th><th class="no-sort">Sex</th><th class="no-sort">Registration Number</th><th class="no-sort">Age</th><th class="no-sort">Date / Time</th></tr></thead></table></div>`;
+    // $("#choose-action-card").hide();
+    // var html = `<div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="off-appointment-patients-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">Records Officer</th><th class="no-sort">Sex</th><th class="no-sort">Registration Number</th><th class="no-sort">Age</th><th class="no-sort">Date / Time</th></tr></thead></table></div>`;
 
    
-    $("#off-appointment-patients-card .card-body").html(html);
+    // $("#off-appointment-patients-card .card-body").html(html);
     
 
-    var table = $("#off-appointment-patients-card #off-appointment-patients-table").DataTable({
+    // var table = $("#off-appointment-patients-card #off-appointment-patients-table").DataTable({
       
-      initComplete : function() {
-        var self = this.api();
-        var filter_input = $('#off-appointment-patients-card .dataTables_filter input').unbind();
-        var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
-            self.search(filter_input.val()).draw();
-        });
-        var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
-            filter_input.val('');
-            search_button.click();
-        });
+    //   initComplete : function() {
+    //     var self = this.api();
+    //     var filter_input = $('#off-appointment-patients-card .dataTables_filter input').unbind();
+    //     var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
+    //         self.search(filter_input.val()).draw();
+    //     });
+    //     var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
+    //         filter_input.val('');
+    //         search_button.click();
+    //     });
 
-        $(document).keypress(function (event) {
-            if (event.which == 13) {
-                search_button.click();
-            }
-        });
+    //     $(document).keypress(function (event) {
+    //         if (event.which == 13) {
+    //             search_button.click();
+    //         }
+    //     });
 
-        $('#off-appointment-patients-card .dataTables_filter').append(search_button, clear_button);
-      },
-      'processing': true,
-       "ordering": true,
-      'serverSide': true,
-      'serverMethod': 'post',
-      'ajax': {
-         'url': url
-      },
-      "language": {
-        processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
-      },
-      search: {
-          return: true,
-      },
-      'columns': [
-        { data: 'id' },
-        { data: 'index' },
-        { data: 'patient_full_name' },
+    //     $('#off-appointment-patients-card .dataTables_filter').append(search_button, clear_button);
+    //   },
+    //   'processing': true,
+    //    "ordering": true,
+    //   'serverSide': true,
+    //   'serverMethod': 'post',
+    //   'ajax': {
+    //      'url': url
+    //   },
+    //   "language": {
+    //     processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
+    //   },
+    //   search: {
+    //       return: true,
+    //   },
+    //   'columns': [
+    //     { data: 'id' },
+    //     { data: 'index' },
+    //     { data: 'patient_full_name' },
         
-        { data: 'records_officer' },
-        { data: 'sex' },
-        { data: 'registration_num' },
+    //     { data: 'records_officer' },
+    //     { data: 'sex' },
+    //     { data: 'registration_num' },
         
-        { data: 'age' },
-        { data: 'date_time' },
+    //     { data: 'age' },
+    //     { data: 'date_time' },
         
-      ],
-      'columnDefs': [
-        {
-            "targets": [0],
-            "visible": false,
-            "searchable": false,
+    //   ],
+    //   'columnDefs': [
+    //     {
+    //         "targets": [0],
+    //         "visible": false,
+    //         "searchable": false,
 
-        },
+    //     },
         
-        {
-          orderable: false,
-          targets: "no-sort"
-        }
-      ],
-      order: [[1, 'desc']],
-      pageLength: 300,
-    });
-    $('#off-appointment-patients-card tbody').on( 'click', 'tr', function () {
-        // console.log( table.row( this ).data() );
-        var data = table.row( this ).data();
-        // var patient_name = data.title + " " + data.first_name + " " + data.last_name;
-        loadPatientBioOffApp(data.id)
+    //     {
+    //       orderable: false,
+    //       targets: "no-sort"
+    //     }
+    //   ],
+    //   order: [[1, 'desc']],
+    //   pageLength: 300,
+    // });
+    // $('#off-appointment-patients-card tbody').on( 'click', 'tr', function () {
+    //     // console.log( table.row( this ).data() );
+    //     var data = table.row( this ).data();
+    //     // var patient_name = data.title + " " + data.first_name + " " + data.last_name;
+    //     loadPatientBioOffApp(data.id)
         
-    } );
-    $("#off-appointment-patients-card").show("fast");
+    // } );
+    // $("#off-appointment-patients-card").show("fast");
 
   }
 
