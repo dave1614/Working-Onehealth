@@ -5118,7 +5118,7 @@
 			return array_values(array_unique($ret));
 		}
 
-		public function getOutstandingBillsCollected($health_facility_id, $days_num){
+		public function getOutstandingBillsCollected($health_facility_id, $start_date, $end_date){
 			// $query = $this->db->get_where("clinic_payments",array('health_facility_id' => $health_facility_id,'type' => 'outstanding'));
 			// if($query->num_rows() > 0){
 			// 	return $query->result();
@@ -5155,7 +5155,7 @@
 			        WHERE
 			            health_facility_id = $health_facility_id 
 			            AND clinic_payments.type = 'outstanding'
-                     	AND STR_TO_DATE(date, '%d %b %Y') > CURDATE() - INTERVAL $days_num DAY
+                     	AND (STR_TO_DATE(date, '%d %b %Y %h:%i:%s%p') BETWEEN '$start_date' AND '$end_date')
                      
 			        ORDER BY
 			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
@@ -5294,27 +5294,122 @@
 		}
 
 
-		public function getOTCPatientsPharmacyPendingPayment($health_facility_id){
+		public function getOTCPatientsPharmacyPendingPayment($health_facility_id, $start_date, $end_date){
 			$ret = array();
-			$this->db->select("initiation_code");
-			$this->db->from('pharmacy_drugs_selected');
-			$this->db->where('health_facility_id',$health_facility_id);
-			// $this->db->where('clinic',0);
-			// $this->db->where('ward',0);
-			$query = $this->db->get();
+			// // $this->db->select("initiation_code");
+			// // $this->db->from('pharmacy_drugs_selected');
+			// // $this->db->where('health_facility_id',$health_facility_id);
+			
+			// // $this->db->where('id >=', 14962);
+
+			// $query_str = "SELECT DISTINCT initiation_code FROM pharmacy_drugs_selected WHERE health_facility_id = {$health_facility_id} AND id >= 12962 ORDER BY id DESC";
+
+			// // $this->db->where('clinic',0);
+			// // $this->db->where('ward',0);
+			// // $query = $this->db->get();
+			// $query = $this->db->query($query_str);
+			// if($query->num_rows() > 0){
+			// 	foreach($query->result() as $row){
+			// 		$initiation_code = $row->initiation_code;
+
+			// 		if($this->getDrugsBalance($health_facility_id,$initiation_code) > 0){
+			// 			$ret[] = $initiation_code;
+			// 		}
+			// 	}
+
+			// 	$ret = array_reverse(array_values(array_unique($ret)));
+			// }
+
+			// return $ret;
+
+			// return $this->getDrugsBalance($health_facility_id, 'ab634534508a-13-08');
+
+			$query_str = "SELECT
+					
+		        l.id,
+           		CONCAT_WS(' ', i.title, i.first_name, i.last_name) AS patient_full_name,
+           		u.slug AS patient_slug,
+           		
+           		(SELECT COUNT(*) FROM pharmacy_drugs_selected t2  WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS no_of_drugs,
+           		
+           		(SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t3  WHERE t3.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS total_amount_due,
+
+           		(CASE WHEN selection_type = 'over_the_counter' THEN ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) WHEN selection_type = 'registered_patient' THEN ( CASE WHEN l.user_type = 'fp' THEN ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) WHEN l.user_type = 'pfp' THEN ( ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT part_payment_discount_percentage FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT part_payment_discount_percentage FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) ELSE 0 END ) ELSE 0 END ) as balance,
+           		l.id as g_id ,
+           		(SELECT (CASE WHEN selection_type = 'over_the_counter' THEN 'Over The Counter Patient' WHEN selection_type = 'registered_patient' AND  referring_facility_id = 0 AND l.user_type = 'fp' AND ward = 1 THEN 'Ward Full Fee Paying Registered Patient' WHEN selection_type = 'registered_patient' AND  referring_facility_id = 0 AND l.user_type = 'fp' AND clinic = 1 THEN 'Clinic Full Fee Paying Registered Patient' WHEN selection_type = 'registered_patient' AND  referring_facility_id  = 0 AND l.user_type = 'pfp' AND ward = 1 THEN 'Ward Part Fee Paying Registered Patient' WHEN selection_type = 'registered_patient' AND  referring_facility_id  = 0 AND l.user_type = 'pfp' AND clinic = 1 THEN 'Clinic Part Fee Paying Registered Patient' WHEN selection_type = 'registered_patient' AND  referring_facility_id = 0 AND l.user_type = 'fp' THEN 'Full Fee Paying Registered Patient' WHEN selection_type = 'registered_patient' AND  referring_facility_id = 0 AND l.user_type = 'pfp' THEN 'Part Fee Paying Registered Patient'  WHEN selection_type = 'registered_patient' AND  referring_facility_id != 0 AND ward = 1 THEN 'Ward Referred Patient' WHEN selection_type = 'registered_patient' AND referring_facility_id != 0 AND clinic = 1 THEN 'Clinic Referred Patient' WHEN selection_type = 'registered_patient' AND referring_facility_id != 0 THEN 'Referred Patient' END) FROM pharmacy_drugs_selected t2  WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1) as patient_type,
+                i.sex AS reg_sex,
+                m.name AS referring_facility_name,
+                m.slug AS referring_facility_slug,
+                CONCAT_WS(o.title, ' ', o.full_name) AS personnel_full_name,
+                o.slug AS personnel_slug,
+                n.registration_num,
+                l.*
+			        
+			        
+			    FROM
+			        (SELECT
+			            id,
+                     	user_id,
+                        referring_facility_id,
+                        personnel_id,
+                        health_facility_id
+                     
+			        FROM
+			            pharmacy_drugs_selected 
+			        WHERE
+			            health_facility_id = $health_facility_id 
+			         AND user_type != 'nfp'
+
+			         
+                     AND (STR_TO_DATE(date, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
+                     
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        pharmacy_drugs_selected AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    
+
+           		LEFT JOIN 
+           			patients AS i
+	                  	ON ( 
+	                  		k.user_id = i.user_id 
+	                  	)
+	            LEFT JOIN 
+               		users AS u
+                      	ON ( 
+                      		k.user_id = u.id 
+                      	)
+               	LEFT JOIN 
+               		health_facility AS m
+                    	ON ( 
+                    		k.referring_facility_id = m.id 
+                    	)
+               	LEFT JOIN 
+               		users AS o
+                      	ON ( 
+                      		k.personnel_id = o.id 
+                      	)
+               LEFT JOIN 
+               		patients_in_facility AS n
+                     	ON ( 
+                     		k.user_id = n.user_id 
+                     	) AND
+                     	(
+                     		k.health_facility_id = n.health_facility_id
+                     	)
+			    
+			    GROUP BY l.initiation_code HAVING balance > 0 ORDER BY l.id DESC ";
+
+			// return $query_str;
+			$query = $this->db->query($query_str);
 			if($query->num_rows() > 0){
-				foreach($query->result() as $row){
-					$initiation_code = $row->initiation_code;
-
-					if($this->getDrugsBalance($health_facility_id,$initiation_code) > 0){
-						$ret[] = $initiation_code;
-					}
-				}
-
-				$ret = array_reverse(array_values(array_unique($ret)));
-			}
-
-			return $ret;
+				return $query->result();
+			}else{
+				return false;
+			}   
 		}
 
 		public function savePharmacyDrugPrescriptionClinic($form_array){
@@ -5343,7 +5438,7 @@
 			}
 		}
 
-		public function getPatientsFeesPharmacy($company_id,$health_facility_id,$user_type,$days_num){
+		public function getPatientsFeesPharmacyNoneFee($company_id,$health_facility_id,$start_date, $end_date){
 	    	//get all codes of this company id
 	    	// $ret = array();
 	    	// $codes = array();
@@ -5378,32 +5473,119 @@
 	    	// return $ret;
 
 
-	    	$query_str = "SELECT
+	    	// $query_str = "SELECT
 					
-			        i.company_id,
-			        n.registration_num,
-                    l.*
+			//         i.company_id,
+			//         n.registration_num,
+            //         l.*
 
+			        
+			//     FROM
+			//         (SELECT
+			//             id,
+            //          date_paid,
+            //          health_facility_id,
+            //          insurance_code,
+            //          user_id
+                     
+                     
+			//         FROM
+			//             pharmacy_drugs_selected 
+			//         WHERE
+			//             health_facility_id = $health_facility_id 
+			//             AND pharmacy_drugs_selected.paid = 1
+			//             AND pharmacy_drugs_selected.selection_type = 'registered_patient'
+			//             AND pharmacy_drugs_selected.user_type = '$user_type'
+            //          	AND STR_TO_DATE(date_paid, '%d %b %Y') > CURDATE() - INTERVAL $days_num DAY
+                    
+            //         GROUP BY pharmacy_drugs_selected.initiation_code 
+			//         ORDER BY
+			//             id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			//     INNER JOIN
+			//         pharmacy_drugs_selected AS l 
+			//             ON (
+			//                 k.id = l.id
+			//             )         
+			//     INNER JOIN
+			//         verification_codes_records AS i 
+			//             ON (
+			//                 k.insurance_code = i.code
+			//             ) AND
+
+			//             (
+			//             	k.health_facility_id = i.health_facility_id
+			//             ) AND
+
+			//             (
+			//             	i.taken = 1
+			//             ) AND
+
+			//             (
+			//             	i.company_id = '$company_id'
+			//             ) 
+			      
+			//     INNER JOIN
+			//         patients_in_facility AS n
+			//             ON (
+			//                 k.user_id = n.user_id
+			//             ) AND
+
+			//             (
+			//             	k.health_facility_id = n.health_facility_id
+			//             ) 
+
+
+
+			//     ORDER BY id DESC
+			            
+			// 		";
+			// $query = $this->db->query($query_str);
+			// if($query->num_rows() > 0){
+			// 	return $query->result();
+			// }else{
+			// 	return false;
+			// }
+
+			$query_str = "SELECT
+					
+		        l.id,
+           		CONCAT_WS(' ', i.title, i.first_name, i.last_name) AS patient_full_name,
+           		u.slug AS patient_slug,
+           		
+           		(SELECT COUNT(*) FROM pharmacy_drugs_selected t2  WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS no_of_drugs,
+           		
+           		(SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t3  WHERE t3.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS total_amount_due,
+
+           		
+                i.sex AS reg_sex,
+                m.name AS referring_facility_name,
+                m.slug AS referring_facility_slug,
+                CONCAT_WS(o.title, ' ', o.full_name) AS personnel_full_name,
+                o.slug AS personnel_slug,
+                n.registration_num,
+                l.*
+			        
 			        
 			    FROM
 			        (SELECT
 			            id,
-                     date_paid,
-                     health_facility_id,
-                     insurance_code,
-                     user_id
-                     
+                     	user_id,
+                        referring_facility_id,
+                        personnel_id,
+                        health_facility_id,
+                        insurance_code
                      
 			        FROM
 			            pharmacy_drugs_selected 
 			        WHERE
 			            health_facility_id = $health_facility_id 
-			            AND pharmacy_drugs_selected.paid = 1
-			            AND pharmacy_drugs_selected.selection_type = 'registered_patient'
-			            AND pharmacy_drugs_selected.user_type = '$user_type'
-                     	AND STR_TO_DATE(date_paid, '%d %b %Y') > CURDATE() - INTERVAL $days_num DAY
-                    
-                    GROUP BY pharmacy_drugs_selected.initiation_code 
+			         AND user_type = 'nfp'
+			         AND paid = 1
+			         AND selection_type = 'registered_patient'
+
+			         
+                     AND (STR_TO_DATE(date_paid, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
+                     
 			        ORDER BY
 			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
 			    INNER JOIN
@@ -5411,45 +5593,280 @@
 			            ON (
 			                k.id = l.id
 			            )         
+			    
 			    INNER JOIN
-			        verification_codes_records AS i 
+			        verification_codes_records AS vc 
 			            ON (
-			                k.insurance_code = i.code
+			                k.insurance_code = vc.code
 			            ) AND
 
 			            (
-			            	k.health_facility_id = i.health_facility_id
+			            	k.health_facility_id = vc.health_facility_id
 			            ) AND
 
 			            (
-			            	i.taken = 1
+			            	vc.taken = 1
 			            ) AND
 
 			            (
-			            	i.company_id = '$company_id'
+			            	vc.company_id = '$company_id'
 			            ) 
-			      
-			    INNER JOIN
-			        patients_in_facility AS n
-			            ON (
-			                k.user_id = n.user_id
-			            ) AND
+           		LEFT JOIN 
+           			patients AS i
+	                  	ON ( 
+	                  		k.user_id = i.user_id 
+	                  	)
+	            LEFT JOIN 
+               		users AS u
+                      	ON ( 
+                      		k.user_id = u.id 
+                      	)
+               	LEFT JOIN 
+               		health_facility AS m
+                    	ON ( 
+                    		k.referring_facility_id = m.id 
+                    	)
+               	LEFT JOIN 
+               		users AS o
+                      	ON ( 
+                      		k.personnel_id = o.id 
+                      	)
+               LEFT JOIN 
+               		patients_in_facility AS n
+                     	ON ( 
+                     		k.user_id = n.user_id 
+                     	) AND
+                     	(
+                     		k.health_facility_id = n.health_facility_id
+                     	)
+			    
+			    GROUP BY l.initiation_code ORDER BY l.id DESC ";
 
-			            (
-			            	k.health_facility_id = n.health_facility_id
-			            ) 
-
-
-
-			    ORDER BY id DESC
-			            
-					";
+			// return $query_str;
 			$query = $this->db->query($query_str);
 			if($query->num_rows() > 0){
 				return $query->result();
 			}else{
 				return false;
-			}
+			}   
+
+
+	    }
+
+		public function getPatientsFeesPharmacy($company_id,$health_facility_id,$user_type,$start_date, $end_date){
+	    	//get all codes of this company id
+	    	// $ret = array();
+	    	// $codes = array();
+	    	// $query = $this->db->get_where("verification_codes_records",array('company_id' => $company_id,'health_facility_id' => $health_facility_id,'taken' => 1));
+	    	// if($query->num_rows() > 0){
+	    	// 	foreach($query->result() as $row){
+	    	// 		$code = $row->code;
+	    	// 		$codes[] = $code;
+	    	// 	}
+	    	// }
+
+
+	    	// if(count($codes) > 0){
+	    	// 	for($i = 0; $i < count($codes); $i++){
+	    	// 		$code = $codes[$i];
+
+		    // 		$query = $this->db->get_where('pharmacy_drugs_selected',array('health_facility_id' => $health_facility_id,'insurance_code' => $code,'selection_type' => 'registered_patient','paid' => 1,'user_type' => $user_type));
+		    // 		if($query->num_rows() > 0){
+		    // 			$initiation_code_arr = array();
+		    // 			foreach($query->result() as $row){
+		    // 				$initiation_code = $row->initiation_code;
+		    // 				$initiation_code_arr[] = $initiation_code;
+		    // 			}
+		    // 			$initiation_code_arr = array_values(array_unique($initiation_code_arr));
+		    // 			$ret = array_merge($ret,$initiation_code_arr);
+		    // 		}
+		    // 	}
+	    	// }
+
+	    	// // var_dump($ret);
+
+	    	// return $ret;
+
+
+	    	// $query_str = "SELECT
+					
+			//         i.company_id,
+			//         n.registration_num,
+            //         l.*
+
+			        
+			//     FROM
+			//         (SELECT
+			//             id,
+            //          date_paid,
+            //          health_facility_id,
+            //          insurance_code,
+            //          user_id
+                     
+                     
+			//         FROM
+			//             pharmacy_drugs_selected 
+			//         WHERE
+			//             health_facility_id = $health_facility_id 
+			//             AND pharmacy_drugs_selected.paid = 1
+			//             AND pharmacy_drugs_selected.selection_type = 'registered_patient'
+			//             AND pharmacy_drugs_selected.user_type = '$user_type'
+            //          	AND STR_TO_DATE(date_paid, '%d %b %Y') > CURDATE() - INTERVAL $days_num DAY
+                    
+            //         GROUP BY pharmacy_drugs_selected.initiation_code 
+			//         ORDER BY
+			//             id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			//     INNER JOIN
+			//         pharmacy_drugs_selected AS l 
+			//             ON (
+			//                 k.id = l.id
+			//             )         
+			//     INNER JOIN
+			//         verification_codes_records AS i 
+			//             ON (
+			//                 k.insurance_code = i.code
+			//             ) AND
+
+			//             (
+			//             	k.health_facility_id = i.health_facility_id
+			//             ) AND
+
+			//             (
+			//             	i.taken = 1
+			//             ) AND
+
+			//             (
+			//             	i.company_id = '$company_id'
+			//             ) 
+			      
+			//     INNER JOIN
+			//         patients_in_facility AS n
+			//             ON (
+			//                 k.user_id = n.user_id
+			//             ) AND
+
+			//             (
+			//             	k.health_facility_id = n.health_facility_id
+			//             ) 
+
+
+
+			//     ORDER BY id DESC
+			            
+			// 		";
+			// $query = $this->db->query($query_str);
+			// if($query->num_rows() > 0){
+			// 	return $query->result();
+			// }else{
+			// 	return false;
+			// }
+
+			$query_str = "SELECT
+					
+		        l.id,
+           		CONCAT_WS(' ', i.title, i.first_name, i.last_name) AS patient_full_name,
+           		u.slug AS patient_slug,
+           		
+           		(SELECT COUNT(*) FROM pharmacy_drugs_selected t2  WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS no_of_drugs,
+           		
+           		(SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t3  WHERE t3.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS total_amount_due,
+
+           		
+           		(CASE WHEN selection_type = 'over_the_counter' THEN ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) WHEN selection_type = 'registered_patient' THEN ( CASE WHEN l.user_type = 'fp' THEN ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) WHEN l.user_type = 'pfp' THEN ( ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT part_payment_discount_percentage FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT part_payment_discount_percentage FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) ELSE 0 END ) ELSE 0 END ) as balance,
+           		
+                i.sex AS reg_sex,
+                m.name AS referring_facility_name,
+                m.slug AS referring_facility_slug,
+                CONCAT_WS(o.title, ' ', o.full_name) AS personnel_full_name,
+                o.slug AS personnel_slug,
+                n.registration_num,
+                l.*
+			        
+			        
+			    FROM
+			        (SELECT
+			            id,
+                     	user_id,
+                        referring_facility_id,
+                        personnel_id,
+                        health_facility_id,
+                        insurance_code
+                     
+			        FROM
+			            pharmacy_drugs_selected 
+			        WHERE
+			            health_facility_id = $health_facility_id 
+			         AND user_type = '$user_type'
+			         AND paid = 1
+			         AND selection_type = 'registered_patient'
+
+			         
+                     AND (STR_TO_DATE(date_paid, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
+                     
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        pharmacy_drugs_selected AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    
+			    INNER JOIN
+			        verification_codes_records AS vc 
+			            ON (
+			                k.insurance_code = vc.code
+			            ) AND
+
+			            (
+			            	k.health_facility_id = vc.health_facility_id
+			            ) AND
+
+			            (
+			            	vc.taken = 1
+			            ) AND
+
+			            (
+			            	vc.company_id = '$company_id'
+			            ) 
+
+           		LEFT JOIN 
+           			patients AS i
+	                  	ON ( 
+	                  		k.user_id = i.user_id 
+	                  	)
+	            LEFT JOIN 
+               		users AS u
+                      	ON ( 
+                      		k.user_id = u.id 
+                      	)
+               	LEFT JOIN 
+               		health_facility AS m
+                    	ON ( 
+                    		k.referring_facility_id = m.id 
+                    	)
+               	LEFT JOIN 
+               		users AS o
+                      	ON ( 
+                      		k.personnel_id = o.id 
+                      	)
+               LEFT JOIN 
+               		patients_in_facility AS n
+                     	ON ( 
+                     		k.user_id = n.user_id 
+                     	) AND
+                     	(
+                     		k.health_facility_id = n.health_facility_id
+                     	)
+			    
+			    GROUP BY l.initiation_code ORDER BY l.id DESC ";
+
+			// return $query_str;
+			$query = $this->db->query($query_str);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return false;
+			}   
 
 
 	    }
@@ -5555,34 +5972,123 @@
 			}
 	    }
 
-		public function getPatientsFeesPharmacyFullPaying($health_facility_id,$days_num){
-			$ret = array();
-			$this->db->select("*");
-			$this->db->from("pharmacy_drugs_selected");
-			$this->db->where("paid",1);
-			$this->db->where("health_facility_id",$health_facility_id);
-			$this->db->where("selection_type","registered_patient");
-			$this->db->where("user_type","fp");
+		public function getPatientsFeesPharmacyFullPaying($health_facility_id,$start_date, $end_date){
+			// $ret = array();
+			// $this->db->select("*");
+			// $this->db->from("pharmacy_drugs_selected");
+			// $this->db->where("paid",1);
+			// $this->db->where("health_facility_id",$health_facility_id);
+			// $this->db->where("selection_type","registered_patient");
+			// $this->db->where("user_type","fp");
 
-			$query = $this->db->get();
+			// $query = $this->db->get();
 			
+			// if($query->num_rows() > 0){
+			// 	// var_dump($query->result());
+			// 	foreach($query->result() as $row){
+					
+			// 		$initiation_code = $row->initiation_code;
+			// 		$user_type = $row->user_type;
+					
+			// 		$ret[] = $initiation_code;
+					
+			// 	}
+			// }else{
+			// 	return false;
+			// }
+			// return $ret;
+
+			$query_str = "SELECT
+					
+		        l.id,
+           		CONCAT_WS(' ', i.title, i.first_name, i.last_name) AS patient_full_name,
+           		u.slug AS patient_slug,
+           		
+           		(SELECT COUNT(*) FROM pharmacy_drugs_selected t2  WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS no_of_drugs,
+           		
+           		(SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t3  WHERE t3.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS total_amount_due,
+
+           		
+           		(CASE WHEN selection_type = 'over_the_counter' THEN ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) WHEN selection_type = 'registered_patient' THEN ( CASE WHEN l.user_type = 'fp' THEN ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) WHEN l.user_type = 'pfp' THEN ( ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT part_payment_discount_percentage FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT part_payment_discount_percentage FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) ELSE 0 END ) ELSE 0 END ) as balance,
+           		
+                i.sex AS reg_sex,
+                m.name AS referring_facility_name,
+                m.slug AS referring_facility_slug,
+                CONCAT_WS(o.title, ' ', o.full_name) AS personnel_full_name,
+                o.slug AS personnel_slug,
+                n.registration_num,
+                l.*
+			        
+			        
+			    FROM
+			        (SELECT
+			            id,
+                     	user_id,
+                        referring_facility_id,
+                        personnel_id,
+                        health_facility_id
+                     
+			        FROM
+			            pharmacy_drugs_selected 
+			        WHERE
+			            health_facility_id = $health_facility_id 
+			         AND user_type = 'fp'
+			         AND paid = 1
+			         AND selection_type = 'registered_patient'
+
+			         
+                     AND (STR_TO_DATE(date_paid, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
+                     
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        pharmacy_drugs_selected AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    
+
+           		LEFT JOIN 
+           			patients AS i
+	                  	ON ( 
+	                  		k.user_id = i.user_id 
+	                  	)
+	            LEFT JOIN 
+               		users AS u
+                      	ON ( 
+                      		k.user_id = u.id 
+                      	)
+               	LEFT JOIN 
+               		health_facility AS m
+                    	ON ( 
+                    		k.referring_facility_id = m.id 
+                    	)
+               	LEFT JOIN 
+               		users AS o
+                      	ON ( 
+                      		k.personnel_id = o.id 
+                      	)
+               LEFT JOIN 
+               		patients_in_facility AS n
+                     	ON ( 
+                     		k.user_id = n.user_id 
+                     	) AND
+                     	(
+                     		k.health_facility_id = n.health_facility_id
+                     	)
+			    
+			    GROUP BY l.initiation_code  ORDER BY l.id DESC ";
+
+			// return $query_str;
+			$query = $this->db->query($query_str);
 			if($query->num_rows() > 0){
-				// var_dump($query->result());
-				foreach($query->result() as $row){
-					
-					$initiation_code = $row->initiation_code;
-					$user_type = $row->user_type;
-					
-					$ret[] = $initiation_code;
-					
-				}
+				return $query->result();
 			}else{
 				return false;
-			}
-			return $ret;
+			}   
 		}
 
-		public function getOverTheCounterPharmacyPayments($health_facility_id,$days_num){
+		public function getOverTheCounterPharmacyPayments($health_facility_id,$start_date, $end_date){
 			// $ret = array();
 			// $this->db->select("*");
 			// $this->db->from("pharmacy_drugs_selected");
@@ -5608,24 +6114,82 @@
 			// }
 			// return $ret;
 
+			// $query_str = "SELECT
+					
+            //         l.*
+
+			        
+			//     FROM
+			//         (SELECT
+			//             id,
+                     
+			//             health_facility_id
+                     
+			//         FROM
+			//             pharmacy_drugs_selected 
+			//         WHERE
+			//             health_facility_id = $health_facility_id 
+			//             AND pharmacy_drugs_selected.paid = 1          
+			//             AND pharmacy_drugs_selected.selection_type = 'over_the_counter'
+            //          	AND STR_TO_DATE(date_paid, '%d %b %Y') > CURDATE() - INTERVAL $days_num DAY
+                     
+			//         ORDER BY
+			//             id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			//     INNER JOIN
+			//         pharmacy_drugs_selected AS l 
+			//             ON (
+			//                 k.id = l.id
+			//             )         
+			//     ORDER BY id DESC
+			            
+			// 		";
+			// $query = $this->db->query($query_str);
+			// if($query->num_rows() > 0){
+			// 	return $query->result();
+			// }else{
+			// 	return false;
+			// }
+
 			$query_str = "SELECT
 					
-                    l.*
+		        l.id,
+           		CONCAT_WS(' ', i.title, i.first_name, i.last_name) AS patient_full_name,
+           		u.slug AS patient_slug,
+           		
+           		(SELECT COUNT(*) FROM pharmacy_drugs_selected t2  WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS no_of_drugs,
+           		
+           		(SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t3  WHERE t3.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id) AS total_amount_due,
 
+           		
+           		(CASE WHEN selection_type = 'over_the_counter' THEN ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) WHEN selection_type = 'registered_patient' THEN ( CASE WHEN l.user_type = 'fp' THEN ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) WHEN l.user_type = 'pfp' THEN ( ( ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT part_payment_discount_percentage FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) - ( ( ( SELECT discount FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) - ( ( ( SELECT part_payment_discount_percentage FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) / 100 ) * ( SELECT SUM(price * quantity) FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id ) ) ) ) ) - ( SELECT amount_paid FROM pharmacy_drugs_selected t2 WHERE t2.initiation_code = l.initiation_code AND health_facility_id = $health_facility_id LIMIT 1 ) ) ELSE 0 END ) ELSE 0 END ) as balance,
+           		
+                i.sex AS reg_sex,
+                m.name AS referring_facility_name,
+                m.slug AS referring_facility_slug,
+                CONCAT_WS(o.title, ' ', o.full_name) AS personnel_full_name,
+                o.slug AS personnel_slug,
+                n.registration_num,
+                l.*
+			        
 			        
 			    FROM
 			        (SELECT
 			            id,
-                     
-			            health_facility_id
+                     	user_id,
+                        referring_facility_id,
+                        personnel_id,
+                        health_facility_id
                      
 			        FROM
 			            pharmacy_drugs_selected 
 			        WHERE
 			            health_facility_id = $health_facility_id 
-			            AND pharmacy_drugs_selected.paid = 1          
-			            AND pharmacy_drugs_selected.selection_type = 'over_the_counter'
-                     	AND STR_TO_DATE(date_paid, '%d %b %Y') > CURDATE() - INTERVAL $days_num DAY
+			         AND user_type != 'nfp'
+			         AND paid = 1
+			         AND selection_type = 'over_the_counter'
+
+			         
+                     AND (STR_TO_DATE(date_paid, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
                      
 			        ORDER BY
 			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
@@ -5634,18 +6198,50 @@
 			            ON (
 			                k.id = l.id
 			            )         
-			    ORDER BY id DESC
-			            
-					";
+			    
+
+           		LEFT JOIN 
+           			patients AS i
+	                  	ON ( 
+	                  		k.user_id = i.user_id 
+	                  	)
+	            LEFT JOIN 
+               		users AS u
+                      	ON ( 
+                      		k.user_id = u.id 
+                      	)
+               	LEFT JOIN 
+               		health_facility AS m
+                    	ON ( 
+                    		k.referring_facility_id = m.id 
+                    	)
+               	LEFT JOIN 
+               		users AS o
+                      	ON ( 
+                      		k.personnel_id = o.id 
+                      	)
+               LEFT JOIN 
+               		patients_in_facility AS n
+                     	ON ( 
+                     		k.user_id = n.user_id 
+                     	) AND
+                     	(
+                     		k.health_facility_id = n.health_facility_id
+                     	)
+			    
+			    GROUP BY l.initiation_code HAVING balance > 0 ORDER BY l.id DESC ";
+
+			// return $query_str;
 			$query = $this->db->query($query_str);
 			if($query->num_rows() > 0){
 				return $query->result();
 			}else{
 				return false;
-			}
-
-
+			}   
 		}
+
+
+		
 
 		public function addPharmacyTellerRecord($form_array){
 	    	$query = $this->db->insert('teller_records_pharmacy',$form_array);
@@ -5695,8 +6291,8 @@
 					$amount = ( $total_amount_due - (($discount / 100) * $total_amount_due));
 					
 				}else if($user_type == "pfp"){
-					$amount = ( $total_amount_due - (($part_payment_discount_percentage / 100) * $total_amount_due));
-					$amount = ( $amount - (($discount / 100) * $amount));
+					$amount =  ( $total_amount_due - (($part_payment_discount_percentage / 100) * $total_amount_due));
+					$amount =  ( $amount - (($discount / 100) * $amount));
 				}else if($user_type == "nfp"){
 					$amount = 0;
 				}
@@ -6287,6 +6883,158 @@
 			}
 		}
 
+		public function getPatientsFeesClinicServicesNoneFeePaying($company_id,$health_facility_id, $start_date, $end_date){
+	    	//get all codes of this company id
+	    	// $ret = array();
+	    	// $codes = array();
+	    	// $query = $this->db->get_where("verification_codes_records",array('company_id' => $company_id,'health_facility_id' => $health_facility_id,'taken' => 1));
+	    	// if($query->num_rows() > 0){
+	    	// 	foreach($query->result() as $row){
+	    	// 		$code = $row->code;
+	    	// 		$codes[] = $code;
+	    	// 	}
+	    	// }
+
+
+	    	// if(count($codes) > 0){
+	    	// 	for($i = 0; $i < count($codes); $i++){
+	    	// 		$code = $codes[$i];
+
+		    // 		$query = $this->db->get_where('ward_services_requested',array('health_facility_id' => $health_facility_id,'insurance_code' => $code,'paid' => 1,'user_type' => 'nfp','receipt_file' => ""));
+		    // 		if($query->num_rows() > 0){
+		    // 			$ward_service_requested_ids = array();
+		    // 			foreach($query->result() as $row){
+		    // 				$id = $row->id;
+		    // 				$ward_service_requested_ids[] = $id;
+		    // 			}
+		    // 			$ret = array_merge($ret,$ward_service_requested_ids);
+		    // 		}
+		    // 	}
+	    	// }
+
+	    	// // var_dump($ret);
+
+	    	// return $ret;
+
+
+	    	$query_str = "SELECT
+					
+			        i.company_id,
+			        j.title,
+			        j.first_name,
+			        j.last_name,
+			        j.sex,
+			        j.dob,
+			        h.user_name,
+			        h.slug,
+			        n.user_name as nurse_user_name,
+			        n.slug as nurse_user_slug,
+			        o.name as clinic_name,
+			        ws.name as service_name,
+			        pf.registration_num,
+
+
+			        
+                    l.*
+
+			        
+			    FROM
+			        (SELECT
+			            id,
+                     	user_id,
+                     	date_paid,
+			            health_facility_id,
+			            ward_service_id,
+			            insurance_code,
+			            nurse_id, 
+			            sub_dept_id
+                     
+			        FROM
+			            clinic_services_requested 
+			        WHERE
+			            health_facility_id = $health_facility_id 
+			            AND clinic_services_requested.paid = 1          
+			            AND clinic_services_requested.user_type = 'nfp'
+			            AND clinic_services_requested.receipt_file = ''
+                     	AND (STR_TO_DATE(date_paid, '%d %b %Y') BETWEEN '$start_date' AND '$end_date')
+                     
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        clinic_services_requested AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    INNER JOIN
+			        verification_codes_records AS i 
+			            ON (
+			                k.insurance_code = i.code
+			            ) AND
+
+			            (
+			            	k.health_facility_id = i.health_facility_id
+			            ) AND
+
+			            (
+			            	i.taken = 1
+			            ) AND
+
+			            (
+			            	i.company_id = '$company_id'
+			            ) 
+			    INNER JOIN
+			        patients AS j
+			            ON (
+			                k.user_id = j.user_id
+			            )   
+			    INNER JOIN
+			        users AS h
+			            ON (
+			                k.user_id = h.id
+			            )
+			    INNER JOIN
+			        patients_in_facility AS pf
+			            ON (
+			                k.user_id = pf.user_id
+			            )AND
+			            (
+			            	k.health_facility_id = pf.health_facility_id
+			            )
+
+			    INNER JOIN
+			        users AS n
+			            ON (
+			                k.nurse_id = n.id
+			            )
+
+			    INNER JOIN
+			        sub_dept AS o
+			            ON (
+			                k.sub_dept_id = o.id
+			            )
+
+			            
+			    INNER JOIN
+			        ward_services AS ws
+			            ON (
+			                k.ward_service_id = ws.id
+			            ) AND
+			            (
+			            	k.health_facility_id = ws.health_facility_id
+			            )
+			    
+			       ORDER BY l.id DESC     
+					";
+			$query = $this->db->query($query_str);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return false;
+			}
+
+
+	    }
+
 		public function getPatientsFeesWardServicesNoneFeePaying($company_id,$health_facility_id, $start_date, $end_date){
 	    	//get all codes of this company id
 	    	// $ret = array();
@@ -6454,6 +7202,77 @@
 	    	}
 
 	    	return $num;
+	    }
+
+	    public function getCompaniesClinicServicesNoneFeePaying($health_facility_id){
+	    	// $ret = array();
+			// $this->db->select("*");
+			// $this->db->from("ward_services_requested");
+			// $this->db->where("paid",1);
+			// $this->db->where("user_type","nfp");
+			// $this->db->where("health_facility_id",$health_facility_id);
+			// $this->db->where("receipt_file","");
+			
+			// $query = $this->db->get();
+			// if($query->num_rows() > 0){
+			// 	foreach($query->result() as $row){
+			// 		$insurance_code = $row->insurance_code;
+			// 		$company_id = $this->onehealth_model->getCompanyIdByInsuranceCode($insurance_code,$health_facility_id);
+
+			// 		$ret[] = $company_id;
+			// 	}
+			// }
+
+			// return array_values(array_unique($ret));
+
+
+			$query_str = "SELECT
+					
+			        i.company_id,
+			        COUNT(k.id) as no_of_payments
+			    FROM
+			        (SELECT
+			            id,
+			            health_facility_id,
+			            insurance_code
+			        FROM
+			            clinic_services_requested 
+			        WHERE
+			            health_facility_id = ".$health_facility_id." 
+			            AND clinic_services_requested.paid = 1          
+			            AND clinic_services_requested.user_type = 'nfp'
+			            AND clinic_services_requested.receipt_file = ''
+			            
+			        ORDER BY
+			            id DESC LIMIT 100000000000 OFFSET 0) AS k         
+			    INNER JOIN
+			        clinic_services_requested AS l 
+			            ON (
+			                k.id = l.id
+			            )         
+			    INNER JOIN
+			        verification_codes_records AS i 
+			            ON (
+			                k.insurance_code = i.code
+			            ) AND
+
+			            (
+			            	k.health_facility_id = i.health_facility_id
+			            ) AND
+
+			            (
+			            	i.taken = 1
+			            )  
+
+			         GROUP BY i.company_id ";
+			$query = $this->db->query($query_str);
+			if($query->num_rows() > 0){
+				return $query->result();
+			}else{
+				return false;
+			}
+
+
 	    }
 
 		public function getCompaniesWardServicesNoneFeePaying($health_facility_id){

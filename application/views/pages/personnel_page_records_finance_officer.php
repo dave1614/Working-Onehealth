@@ -78,8 +78,14 @@
   }
 
   function viewOutstandingBillsCollected (elem,evt) {
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
-        
+
+
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_outstanding_fees_default'); ?>";
     
     $.ajax({
@@ -87,18 +93,18 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num=1&type=fp",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true ){
           var messages = response.messages;
           
           $("#hospital-teller-card").hide();
           $("#view-outstanding-payments-card .card-title").html("Outstanding Payments");
           $("#view-outstanding-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#outstanding-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-outstanding-payments-card #outstanding-table").DataTable();
           $("#view-outstanding-payments-card").show();
         }
         else{
@@ -1877,6 +1883,54 @@
     $("#view-services-payments-hmo-card").hide();
   }
 
+  function goBackFromViewServicesPaymentsHmoCardClinic (elem,evt) {
+    $("#clinic-services-companies-card").show();
+    $("#view-services-payments-hmo-card-clinic").hide();
+  }
+
+  function viewNonePayingClinicServices (elem,evt) {
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_companies_with_none_fee_payment_clinics_services_fees'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true",
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true && response.messages != ""){
+          var messages = response.messages;
+          $("#choose-patient-type-services-clinic").modal("hide");
+          $("#hospital-teller-card").hide();
+          $("#clinic-services-companies-card .card-title").html("Insurance And Retainership Clinic Services Bills(None Fee Paying)");
+          $("#clinic-services-companies-card .card-body").html(messages);
+          
+          $("#clinic-services-companies-card #clinic-services-companies-table").DataTable();
+          $("#clinic-services-companies-card").show();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
   function viewNonePayingWardServices (elem,evt) {
     $(".spinner-overlay").show();
         
@@ -1920,7 +1974,103 @@
     });
   }
 
-   function viewNoneFeePayingWardServicesPaymentsInfo (elem,evt) {
+  function selectTimeRangeClinicServicesChangedNoneFeePaying(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_clinic_services_fees_by_company_id_none_fee_paying'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true && response.messages != ""){
+          var messages = response.messages;
+          $("#view-services-payments-hmo-card-clinic .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-services-payments-hmo-card-clinic #services-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function viewNoneFeePayingClinicServicesPaymentsInfo (elem,evt) {
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    var company_id = elem.attr("data-company-id");
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_clinic_services_fees_by_company_id_none_fee_paying'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#clinic-services-companies-card").hide();
+          $("#view-services-payments-hmo-card-clinic .card-title").html("Clinic Services Payments For None Fee Paying Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
+          $("#view-services-payments-hmo-card-clinic .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-services-payments-hmo-card-clinic #services-table").DataTable();
+          $("#view-services-payments-hmo-card-clinic").show();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function viewNoneFeePayingWardServicesPaymentsInfo (elem,evt) {
     elem = $(elem);
 
     var start_date = getYesterdayCurrentFullDate();
@@ -1939,7 +2089,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#ward-services-companies-card").hide();
@@ -2068,8 +2218,13 @@
   }
 
   function selectTimeRangeOutstandingChanged(elem,event){
-    var days_num = $(elem).val();
-  
+     elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
     $(".spinner-overlay").show();
         
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_outstanding_fees_default'); ?>";
@@ -2079,15 +2234,15 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-outstanding-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#outstanding-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-outstanding-payments-card #outstanding-table").DataTable();
         }
         else{
          $.notify({
@@ -2203,7 +2358,14 @@
   }
 
   function selectTimeRangePharmacyOverTheCounterChanged(elem,event){
-    var days_num = $(elem).val();
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
     
     $(".spinner-overlay").show();
         
@@ -2214,19 +2376,19 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-over-the-counter-pharmacy-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
+          // $('.my-select').selectpicker();
           $("#view-over-the-counter-pharmacy-payments-card #laboratory-table").DataTable();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -2255,6 +2417,11 @@
       confirmButtonText: 'Over The Counter Payments',
       cancelButtonText : "Registered Patients Payments"
     }).then(function(){
+      elem = $(elem);
+
+      var start_date = getYesterdayCurrentFullDate();
+      var end_date = getTodayCurrentFullDate();
+      console.log(start_date + " " + end_date)
       $(".spinner-overlay").show();
         
       var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_over_the_counter_pharmacy_payments'); ?>";
@@ -2264,23 +2431,23 @@
         type : "POST",
         responseType : "json",
         dataType : "json",
-        data : "show_records=true&days_num=1",
+        data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
         success : function (response) {
           console.log(response)
           $(".spinner-overlay").hide();
-          if(response.success == true && response.messages != ""){
+          if(response.success == true){
             var messages = response.messages;
             
             $("#choose-action-card").hide();
             $("#view-over-the-counter-pharmacy-payments-card .card-title").html("Over The Counter Payments For Pharmacy");
             $("#view-over-the-counter-pharmacy-payments-card .card-body").html(messages);
-            $('.my-select').selectpicker();
+            // $('.my-select').selectpicker();
             $("#view-over-the-counter-pharmacy-payments-card #laboratory-table").DataTable();
             $("#view-over-the-counter-pharmacy-payments-card").show();
           }
           else{
            $.notify({
-            message:"No Record To Display"
+            message:"Sorry Something Went Wrong"
             },{
               type : "warning"  
             });
@@ -2347,7 +2514,13 @@
 
   function viewFullPayingPharmacy (elem,evt) {
     
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
+    
         
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_pharmacy_fees_full_paying'); ?>";
     
@@ -2356,23 +2529,23 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num=1",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-pharmacy").modal("hide");
           $("#choose-action-card").hide();
-          $("#view-pharmacy-payments-card .card-title").html("Pharmacy Payments For Full Payment Patients");
-          $("#view-pharmacy-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#pharmacy-table").DataTable();
-          $("#view-pharmacy-payments-card").show();
+          $("#view-pharmacy-payments-normal-card .card-title").html("Pharmacy Payments For Full Payment Patients");
+          $("#view-pharmacy-payments-normal-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-pharmacy-payments-normal-card #pharmacy-table").DataTable();
+          $("#view-pharmacy-payments-normal-card").show();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -2389,8 +2562,22 @@
     });
   }
 
+  function goBackFromViewPharmacyPaymentsCardNormal(elem, event){
+    $("#view-pharmacy-payments-normal-card").hide();
+    $("#choose-action-card").show();
+    $("#choose-patient-type-pharmacy").modal("show");
+    
+    
+    
+  }
+
   function selectTimeRangePharmacyChangedFullPaying(elem,event){
-    var days_num = $(elem).val();
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+
+    console.log(start_date)
+    console.log(end_date)
     
     $(".spinner-overlay").show();
         
@@ -2401,19 +2588,19 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
-          $("#view-pharmacy-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#pharmacy-table").DataTable();
+          $("#view-pharmacy-payments-normal-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-pharmacy-payments-normal-card #pharmacy-table").DataTable();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -2643,8 +2830,13 @@
 
   function viewPartPayingPharmacyInfo (elem,evt) {
     elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
     var company_id = elem.attr("data-company-id");
+
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_pharmacy_fees_by_company_id_part_paying'); ?>";
     
     $.ajax({
@@ -2652,23 +2844,23 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num=1&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#pharmacy-companies-card").hide();
           $("#view-pharmacy-payments-card .card-title").html("Pharmacy Payments For Part Payment Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
           $("#view-pharmacy-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#pharmacy-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-pharmacy-payments-card #pharmacy-table").DataTable();
           $("#view-pharmacy-payments-card").show();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -2686,8 +2878,15 @@
   }
 
   function selectTimeRangePharmacyChangedPartPaying(elem,event){
-    var days_num = $(elem).val();
-    var company_id = $(elem).attr("data-company-id");
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
+    
     $(".spinner-overlay").show();
         
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_pharmacy_fees_by_company_id_part_paying'); ?>";
@@ -2697,19 +2896,19 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num+"&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-pharmacy-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#pharmacy-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-pharmacy-payments-card #pharmacy-table").DataTable();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong."
           },{
             type : "warning"  
           });
@@ -2772,6 +2971,10 @@
 
   function viewNoneFeePayingPharmacyInfo (elem,evt) {
     elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
     var company_id = elem.attr("data-company-id");
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_pharmacy_fees_by_company_id_none_fee_paying'); ?>";
@@ -2781,23 +2984,23 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num=1&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#pharmacy-companies-card").hide();
-          $("#view-laboratory-payments-card .card-title").html("Pharmacy Payments For None Fee Payment Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
+          $("#view-pharmacy-payments-card .card-title").html("Pharmacy Payments For None Fee Payment Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
           $("#view-pharmacy-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#pharmacy-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-pharmacy-payments-card #pharmacy-table").DataTable();
           $("#view-pharmacy-payments-card").show();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong."
           },{
             type : "warning"  
           });
@@ -2815,8 +3018,15 @@
   }
 
   function selectTimeRangePharmacyChangedNonePaying(elem,event){
-    var days_num = $(elem).val();
-    var company_id = $(elem).attr("data-company-id");
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
+    
     $(".spinner-overlay").show();
         
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_pharmacy_fees_by_company_id_none_fee_paying'); ?>";
@@ -2826,19 +3036,19 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num+"&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-pharmacy-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#pharmacy-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-pharmacy-payments-card #pharmacy-table").DataTable();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong."
           },{
             type : "warning"  
           });
@@ -4306,6 +4516,16 @@
                 </div>
               </div>
 
+              <div class="card" id="view-services-payments-hmo-card-clinic" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromViewServicesPaymentsHmoCardClinic(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
               <div class="card" id="clinic-services-companies-card" style="display: none;">
                 <div class="card-header">
                   <button class="btn btn-round btn-warning" onclick="goBackFromClinicServicesCompaniesCard(this,event)">Go Back</button>
@@ -4557,6 +4777,16 @@
               <div class="card" id="view-outstanding-payments-card" style="display: none;">
                 <div class="card-header">
                   <button class="btn btn-round btn-warning" onclick="goBackFromViewOutstandingPaymentsCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="view-pharmacy-payments-normal-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromViewPharmacyPaymentsCardNormal(this,event)">Go Back</button>
                   <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
                 </div>
                 <div class="card-body">

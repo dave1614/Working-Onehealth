@@ -300,6 +300,29 @@
     }
   }
 
+  function getTodayCurrentFullDate(){
+    var date = new Date();
+
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
+
+   function getYesterdayCurrentFullDate(){
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+
+    // let day = date.getDate();
+    // let month = date.getMonth() + 1;
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
+
   function openEnterDiscountForm (elem,evt) {
     $("#choose-action-add-discount-div").hide("slow");
     $("#add-discount-form").show("slow");
@@ -785,18 +808,75 @@
     $("#payment-history-otc-card").hide();
   }
 
-  function otcPatients(elem,evt){
+  
+
+  function selectTimeRangeOTCPatientsPayments(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
     
     $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/get_pending_payment_otc_patients_pharmacy'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#outstanding-payments-card .card-body").html(messages);
+          $("#outstanding-payments-card #outstanding-payments-table").DataTable();
+          
+          
+        }
+        else{
+         swal({
+            title: 'Ooops!',
+            text: "Sorry Something Went Wrong. Please Try Again",
+            type: 'warning'
+            
+          })
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function otcPatients(elem,evt){
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+
     $.ajax({
       url : "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/get_pending_payment_otc_patients_pharmacy'); ?>",
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#main-card").hide();
           $("#outstanding-payments-card .card-body").html(messages);
