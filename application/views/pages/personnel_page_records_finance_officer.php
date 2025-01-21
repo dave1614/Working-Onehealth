@@ -569,7 +569,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-consultation").modal("hide");
           $("#hospital-teller-card").hide();
@@ -581,7 +581,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"orry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -629,7 +629,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -813,7 +813,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-consultation").modal("hide");
           $("#hospital-teller-card").hide();
@@ -825,7 +825,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"orry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -862,7 +862,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#clinic-consultation-companies-card").hide();
@@ -874,7 +874,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -962,7 +962,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-admission").modal("hide");
           $("#hospital-teller-card").hide();
@@ -974,7 +974,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1012,7 +1012,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-admission-payments-card .card-body").html(messages);
           // $('.my-select').selectpicker();
@@ -1020,7 +1020,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1147,7 +1147,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#ward-admission-companies-card").hide();
@@ -1159,7 +1159,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1200,7 +1200,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-admission-payments-hmo-card .card-body").html(messages);
           // $('.my-select').selectpicker();
@@ -1208,7 +1208,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1252,7 +1252,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-admission").modal("hide");
           $("#hospital-teller-card").hide();
@@ -1264,7 +1264,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1299,7 +1299,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#ward-admission-companies-card").hide();
@@ -1311,7 +1311,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1351,7 +1351,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-admission-payments-hmo-card .card-body").html(messages);
           // $('.my-select').selectpicker();
@@ -1359,7 +1359,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1396,7 +1396,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-services-clinic").modal("hide");
           $("#hospital-teller-card").hide();
@@ -1408,7 +1408,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1454,7 +1454,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1593,7 +1593,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-services-clinic").modal("hide");
           $("#hospital-teller-card").hide();
@@ -1605,7 +1605,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1636,7 +1636,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-services").modal("hide");
           $("#hospital-teller-card").hide();
@@ -1648,7 +1648,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1711,7 +1711,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1759,7 +1759,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1856,7 +1856,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1902,7 +1902,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-services-clinic").modal("hide");
           $("#hospital-teller-card").hide();
@@ -1914,7 +1914,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1945,7 +1945,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-services").modal("hide");
           $("#hospital-teller-card").hide();
@@ -1957,7 +1957,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -1997,7 +1997,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-services-payments-hmo-card-clinic .card-body").html(messages);
           // $('.my-select').selectpicker();
@@ -2053,7 +2053,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -2141,7 +2141,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-services-payments-hmo-card .card-body").html(messages);
           // $('.my-select').selectpicker();
@@ -2149,7 +2149,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -2629,6 +2629,11 @@
 
   function viewFullPayingLaboratory (elem,evt) {
     
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
         
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_laboratory_fees'); ?>";
@@ -2638,11 +2643,11 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&user_type=fp",
+      data : "show_records=true&user_type=fp&start_date="+start_date+"&end_date="+end_date,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#choose-patient-type-laboratory").modal("hide");
           $("#choose-action-card").hide();
@@ -2651,6 +2656,59 @@
           
           $("#view-laboratory-payments-full-paying-card #view-laboratory-payments-full-paying-table").DataTable();
           $("#view-laboratory-payments-full-paying-card").show();
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  
+
+  function selectTimeRangeLabChangedFullPaying(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+
+    console.log(start_date)
+    console.log(end_date)
+  
+    
+    $(".spinner-overlay").show();
+        
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_laboratory_fees'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&user_type=fp&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+
+
+          $("#view-laboratory-payments-full-paying-card .card-body").html(messages);
+          
+          $("#view-laboratory-payments-full-paying-card #view-laboratory-payments-full-paying-table").DataTable();
+          
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
         }
       },
       error: function (jqXHR,textStatus,errorThrown) {
@@ -3113,6 +3171,11 @@
 
   function viewNoneFeePayingLaboratoryInfo (elem,evt) {
     elem = $(elem);
+
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
     var company_id = elem.attr("data-company-id");
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_laboratory_fees_by_company_id_none_fee_paying'); ?>";
@@ -3122,23 +3185,23 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num=1&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#lab-companies-card").hide();
           $("#view-laboratory-payments-card .card-title").html("Laboratory Payments For None Fee Payment Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
           $("#view-laboratory-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#laboratory-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-laboratory-payments-card #laboratory-table").DataTable();
           $("#view-laboratory-payments-card").show();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong."
           },{
             type : "warning"  
           });
@@ -3164,10 +3227,16 @@
   }
 
   function selectTimeRangeLaboratoryChangedPartPaying(elem,event){
-    var days_num = $(elem).val();
-    var company_id = $(elem).attr("data-company-id");
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
+    
     $(".spinner-overlay").show();
-        
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_laboratory_fees_by_company_id_part_paying'); ?>";
     
     $.ajax({
@@ -3175,19 +3244,19 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num+"&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
-          $("#view-laboratory-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#laboratory-table").DataTable();
+          $("#view-laboratory-payments-part-paying-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-laboratory-payments-part-paying-card #view-laboratory-payments-part-paying-table").DataTable();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -3208,10 +3277,16 @@
 
 
   function selectTimeRangeLaboratoryChangedNonePaying(elem,event){
-    var days_num = $(elem).val();
-    var company_id = $(elem).attr("data-company-id");
-    $(".spinner-overlay").show();
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
         
+    $(".spinner-overlay").show();
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_laboratory_fees_by_company_id_none_fee_paying'); ?>";
     
     $.ajax({
@@ -3219,19 +3294,19 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&days_num="+days_num+"&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#view-laboratory-payments-card .card-body").html(messages);
-          $('.my-select').selectpicker();
-          $("#laboratory-table").DataTable();
+          // $('.my-select').selectpicker();
+          $("#view-laboratory-payments-card #laboratory-table").DataTable();
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong."
           },{
             type : "warning"  
           });
@@ -3734,8 +3809,13 @@
 
    function viewPartPayingLaboratoryInfo (elem,evt) {
     elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
     var company_id = elem.attr("data-company-id");
+
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_laboratory_fees_by_company_id_part_paying'); ?>";
     
     $.ajax({
@@ -3743,11 +3823,11 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&company_id="+company_id,
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           
           $("#lab-companies-card").hide();
@@ -3759,7 +3839,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -3800,7 +3880,7 @@
         success : function (response) {
           console.log(response)
           $(".spinner-overlay").hide();
-          if(response.success && response.messages != ""){
+          if(response.success){
             var messages = response.messages;
             
             $("#lab-part-paying-payments-by-date-and-companyid-card .card-title").html("Payments Made On:  <em class='text-primary'>"+date+"</em> <br> Company Id:  <em class='text-primary'>"+company_id+"</em>");
@@ -3811,7 +3891,7 @@
           }
           else{
            $.notify({
-            message:"No Payment History To Display For This Date."
+            message:"Sorry Something Went Wrong."
             },{
               type : "warning"  
             });
@@ -3909,7 +3989,7 @@
         success : function (response) {
           console.log(response)
           $(".spinner-overlay").hide();
-          if(response.success && response.messages != ""){
+          if(response.success){
             var messages = response.messages;
             
             $("#history-of-previous-payment-lab-part-paying-card .card-title").html("History Of Previous Payments From: <em class='text-primary'>"+date+"</em> <br> Company Id: <em class='text-primary'>"+company_id+"</em>");
@@ -3920,7 +4000,7 @@
           }
           else{
            $.notify({
-            message:"No Payment History To Display For This Initiation."
+            message:"Sorry Something Went Wrong."
             },{
               type : "warning"  
             });
@@ -4040,6 +4120,248 @@
     $("#choose-patient-type-monthly").modal("show");
   }
 
+  function viewAccountingReports(elem, evt){
+    evt.preventDefault();
+    $("#choose-action-card").hide();
+    $("#account-reports-card").show();
+  }
+
+  function goBackFromAccountReportsCard(elem, evt){
+    $("#account-reports-card").hide();
+    $("#choose-action-card").show();
+  }
+
+  function accountReportsHospitalTeller(elem, evt){
+    evt.preventDefault();
+    
+    $("#account-reports-card").hide();
+    $("#account-reports-hospital-teller-card").show();
+  }
+
+  function goBackFromAccountReportsHospitalTellerCard(elem, evt){
+    
+    
+    $("#account-reports-card").show();
+    $("#account-reports-hospital-teller-card").hide();
+  }
+
+  
+
+  function viewAccountReportConsultationFees(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_consultation_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-hospital-teller-card").hide();
+          $("#account-reports-consultation-fee-card .card-title").html("Account reports for patient consultation");
+          $("#account-reports-consultation-fee-card .card-body").html(messages);
+          
+          $("#account-reports-consultation-fee-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeConsultationFee(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_consultation_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-consultation-fee-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+
+  function goBackFromAccountReportsConsultationFeeCard (elem, evt) {
+    $("#account-reports-consultation-fee-card").hide(); 
+    $("#account-reports-hospital-teller-card").show();
+    
+    
+  }
+
+  function viewAccountReportRegistrationFees(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_registration_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-hospital-teller-card").hide();
+          $("#account-reports-registration-fee-card .card-title").html("Account reports for patient registration");
+          $("#account-reports-registration-fee-card .card-body").html(messages);
+          
+          $("#account-reports-registration-fee-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeRegistrationFee(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_registration_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-registration-fee-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+
+  function goBackFromAccountReportsRegistrationFeeCard (elem, evt) {
+    $("#account-reports-registration-fee-card").hide(); 
+    $("#account-reports-hospital-teller-card").show();
+    
+    
+  }
+  
+
   function viewNonePayingMonthly(elem,evt) {
     
     
@@ -4128,7 +4450,7 @@
     
   }
 
-  function goBackFromLabCompaniesCard (elem,evt) {
+  function goBackFromMonthlyPaymentsCard (elem,evt) {
     $("#choose-patient-type-monthly").modal("show");
     $("#choose-action-card").show();
    
@@ -4343,7 +4665,7 @@
 
               <div class="card" id="monthly-payments-card" style="display: none;">
                 <div class="card-header">
-                  <button class="btn btn-round btn-warning" onclick="goBackFromLabCompaniesCard(this,event)">Go Back</button>
+                  <button class="btn btn-round btn-warning" onclick="goBackFromMonthlyPaymentsCard(this,event)">Go Back</button>
                   <h3 class="card-title" style="text-transform: capitalize;"></h3>
                 </div>
                 <div class="card-body">
@@ -4667,6 +4989,119 @@
                 </div>
               </div>
 
+              <div class="card" id="account-reports-consultation-fee-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsConsultationFeeCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="account-reports-registration-fee-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsRegistrationFeeCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="account-reports-hospital-teller-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsHospitalTellerCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View hospital teller accounting reports in: </h3>
+                </div>
+                <div class="card-body">
+
+                  <table class="table">
+                    <tbody>
+                      
+                      <tr class="pointer-cursor">
+                        <td>1</td>
+                        <td><a href="#" onclick="viewAccountReportRegistrationFees(this,event)">Registration Fees</a></td>
+                      </tr>
+                      <tr class="pointer-cursor">
+                        <td>2</td>
+                        <td><a href="#" onclick="viewAccountReportConsultationFees(this,event)">Consultation Fees</a></td>
+                      </tr>
+                      <tr class="pointer-cursor">
+                        <td>3</td>
+                        <td><a href="#" onclick="viewAdmissionFees(this,event)">Wards Admission Fees</a></td>
+                      </tr>
+                      <tr class="pointer-cursor">
+                        <td>4</td>
+                        <td><a href="#" onclick="viewWardServices(this,event)">Wards Services</a></td>
+                      </tr>
+                      <tr class="pointer-cursor">
+                        <td>5</td>
+                        <td><a href="#" onclick="viewClinicServices(this,event)">Clinic Services</a></td>
+                      </tr>
+                      <tr class="pointer-cursor">
+                        <td>6</td>
+                        <td><a href="#" onclick="viewOutstandingBillsCollected(this,event)">Outstanding Bills Collected</a></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="card" id="account-reports-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View accounting reports in: </h3>
+                </div>
+                <div class="card-body">
+
+                  <table class="table">
+                    <tbody>
+                      
+                      <?php if($health_facility_structure == "hospital"){ ?>
+                      <tr class="pointer-cursor">
+                        <td>1</td>
+                        <td><a href="#" onclick="accountReportsHospitalTeller(this,event)">Hospital Teller</a></td>
+                      </tr>
+                      <tr class="pointer-cursor">
+                        <td>2</td>
+                        <td><a href="#" onclick="viewPharmacy(this,event)">Pharmacy</a></td>
+                      </tr>
+                      
+                      <tr class="pointer-cursor">
+                        <td>3</td>
+                        <td><a href="#" onclick="viewLaboratory(this,event)">Laboratory</a></td>
+                      </tr>
+
+                      <tr class="pointer-cursor">
+                        <td>4</td>
+                        <td><a href="#" onclick="viewMortuary(this,event)">Mortuary</a></td>
+                      </tr>
+
+                    
+
+                      <?php }else if($health_facility_structure == "pharmacy"){ ?>
+                       <tr class="pointer-cursor">
+                        <td>1</td>
+                        <td><a href="#" onclick="viewPharmacy(this,event)">Pharmacy</a></td>
+                      </tr>
+                      <?php }else if($health_facility_structure == "laboratory"){ ?>
+                      <tr class="pointer-cursor">
+                        <td>1</td>
+                        <td><a href="#" onclick="viewLaboratory(this,event)">Laboratory</a></td>
+                      </tr>
+                      <?php }else if($health_facility_structure == "mortuary"){ ?>
+                      <tr class="pointer-cursor">
+                        <td>4</td>
+                        <td><a href="#" onclick="viewMortuary(this,event)">Mortuary</a></td>
+                      </tr>
+                      <?php } ?>
+
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
               
 
               <div class="card" id="choose-action-card" style="display: none;">
@@ -4701,6 +5136,11 @@
                       <tr class="pointer-cursor">
                         <td>5</td>
                         <td><a href="#" onclick="viewClientsMonthlyBills(this,event)">Clients Monthly Bills</a></td>
+                      </tr>
+
+                      <tr class="pointer-cursor">
+                        <td>6</td>
+                        <td><a href="#" onclick="viewAccountingReports(this,event)">Accounting Reports</a></td>
                       </tr>
 
                       <?php }else if($health_facility_structure == "pharmacy"){ ?>

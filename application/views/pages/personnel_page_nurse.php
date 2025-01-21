@@ -244,88 +244,103 @@
     evt.preventDefault();
     
     current_card = "edit-patient-bio-data-card";
+    
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+        
+    
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/view-registered-patients-records-paid'); ?>";
     
-    
-
-    $("#choose-action-card").hide();
-    var html = `<div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="new-patients-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">Records Officer</th><th class="no-sort">Sex</th><th class="no-sort">Registration Number</th><th class="no-sort">Age</th><th class="no-sort">Date / Time</th></tr></thead></table></div>`;
-
-   
-    $("#previously-registered-patients-card .card-body").html(html);
-    
-
-    var table = $("#previously-registered-patients-card #new-patients-table").DataTable({
-      
-      initComplete : function() {
-        var self = this.api();
-        var filter_input = $('#previously-registered-patients-card .dataTables_filter input').unbind();
-        var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
-            self.search(filter_input.val()).draw();
-        });
-        var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
-            filter_input.val('');
-            search_button.click();
-        });
-
-        $(document).keypress(function (event) {
-            if (event.which == 13) {
-                search_button.click();
-            }
-        });
-
-        $('#previously-registered-patients-card .dataTables_filter').append(search_button, clear_button);
-      },
-      'processing': true,
-       "ordering": true,
-      'serverSide': true,
-      'serverMethod': 'post',
-      'ajax': {
-         'url': url
-      },
-      "language": {
-        processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
-      },
-      search: {
-          return: true,
-      },
-      'columns': [
-        { data: 'id' },
-        { data: 'index' },
-        { data: 'patient_full_name' },
-        
-        { data: 'records_officer' },
-        { data: 'sex' },
-        { data: 'registration_num' },
-        
-        { data: 'age' },
-        { data: 'date_time' },
-        
-      ],
-      'columnDefs': [
-        {
-            "targets": [0],
-            "visible": false,
-            "searchable": false,
-
-        },
-        
-        {
-          orderable: false,
-          targets: "no-sort"
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#choose-action-card").hide();
+          $("#previously-registered-patients-card .card-title").html("New Patients Ready For Input Of Vital Signs");
+          $("#previously-registered-patients-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#previously-registered-patients-card #new-patients-table").DataTable();
+          $("#previously-registered-patients-card").show();
         }
-      ],
-      order: [[1, 'desc']]
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
     });
-    $('#previously-registered-patients-card tbody').on( 'click', 'tr', function () {
-        // console.log( table.row( this ).data() );
-        var data = table.row( this ).data();
-        // var patient_name = data.title + " " + data.first_name + " " + data.last_name;
-        loadPatientBioDataEdit(data.id)
-        
-    } );
-    $("#previously-registered-patients-card").show("fast");
 
+  }
+
+  
+
+  function selectTimeRangeNewPatients(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/view-registered-patients-records-paid'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#previously-registered-patients-card .card-body").html(messages);
+          $("#previously-registered-patients-card #new-patients-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
   }
 
   function selectTimeRangeOffAppointment(elem,event){
@@ -351,7 +366,7 @@
       success : function (response) {
         console.log(response)
         $(".spinner-overlay").hide();
-        if(response.success == true && response.messages != ""){
+        if(response.success == true){
           var messages = response.messages;
           $("#off-appointment-patients-card .card-body").html(response.messages);
           
@@ -359,7 +374,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
@@ -405,7 +420,7 @@
         }
         else{
           $.notify({
-          message: "No Data To Display"
+          message: "Sorry Something Went Wrong"
           },{
             type : "warning"  
           });

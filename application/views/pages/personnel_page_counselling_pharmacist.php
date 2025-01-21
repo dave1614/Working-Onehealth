@@ -387,86 +387,131 @@
       //   }
       // });
 
-      var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' . $fourth_addition .'/view_all_registered_patients_pharmacy'); ?>";
-      $("#perform-functions-card").hide("fast");
-      var html = `<p class="text-primary">Click Patient To Perform Action.</p><div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="registered-patients-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">User Name</th><th class="no-sort">Registration Number</th><th class="no-sort">Gender</th><th class="no-sort">Age</th><th class="no-sort">User Type</th><th class="no-sort">Date Registered</th><th class="no-sort">Time Registered</th><th class="no-sort">Registered By</th></tr></thead></table></div>`;
+      // var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' . $fourth_addition .'/view_all_registered_patients_pharmacy'); ?>";
+      // $("#perform-functions-card").hide("fast");
+      // var html = `<p class="text-primary">Click Patient To Perform Action.</p><div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="registered-patients-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">User Name</th><th class="no-sort">Registration Number</th><th class="no-sort">Gender</th><th class="no-sort">Age</th><th class="no-sort">User Type</th><th class="no-sort">Date Registered</th><th class="no-sort">Time Registered</th><th class="no-sort">Registered By</th></tr></thead></table></div>`;
 
      
-      $("#registered-patients-card .card-body").html(html);
+      // $("#registered-patients-card .card-body").html(html);
       
 
-      var table = $("#registered-patients-card #registered-patients-table").DataTable({
+      // var table = $("#registered-patients-card #registered-patients-table").DataTable({
         
-        initComplete : function() {
-          var self = this.api();
-          var filter_input = $('#registered-patients-card .dataTables_filter input').unbind();
-          var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
-              self.search(filter_input.val()).draw();
-          });
-          var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
-              filter_input.val('');
-              search_button.click();
-          });
+      //   initComplete : function() {
+      //     var self = this.api();
+      //     var filter_input = $('#registered-patients-card .dataTables_filter input').unbind();
+      //     var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
+      //         self.search(filter_input.val()).draw();
+      //     });
+      //     var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
+      //         filter_input.val('');
+      //         search_button.click();
+      //     });
 
-          $(document).keypress(function (event) {
-              if (event.which == 13) {
-                  search_button.click();
-              }
-          });
+      //     $(document).keypress(function (event) {
+      //         if (event.which == 13) {
+      //             search_button.click();
+      //         }
+      //     });
 
-          $('#registered-patients-card .dataTables_filter').append(search_button, clear_button);
-        },
-        'processing': true,
-         "ordering": true,
-        'serverSide': true,
-        'serverMethod': 'post',
-        'ajax': {
-           'url': url
-        },
-        "language": {
-          processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
-        },
-        search: {
-            return: true,
-        },
-        'columns': [
-          { data: 'id' },
-          { data: 'index' },
-          { data: 'patient_name' },
+      //     $('#registered-patients-card .dataTables_filter').append(search_button, clear_button);
+      //   },
+      //   'processing': true,
+      //    "ordering": true,
+      //   'serverSide': true,
+      //   'serverMethod': 'post',
+      //   'ajax': {
+      //      'url': url
+      //   },
+      //   "language": {
+      //     processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
+      //   },
+      //   search: {
+      //       return: true,
+      //   },
+      //   'columns': [
+      //     { data: 'id' },
+      //     { data: 'index' },
+      //     { data: 'patient_name' },
           
-          { data: 'user_name' },
-          { data: 'registration_num' },
-          { data: 'gender' },
-          { data: 'age' },
-          { data: 'user_type' },
-          { data: 'date_registered' },
-          { data: 'time_registered' },
-          { data: 'registered_by' },
+      //     { data: 'user_name' },
+      //     { data: 'registration_num' },
+      //     { data: 'gender' },
+      //     { data: 'age' },
+      //     { data: 'user_type' },
+      //     { data: 'date_registered' },
+      //     { data: 'time_registered' },
+      //     { data: 'registered_by' },
           
-        ],
-        'columnDefs': [
-          {
-              "targets": [0],
-              "visible": false,
-              "searchable": false,
+      //   ],
+      //   'columnDefs': [
+      //     {
+      //         "targets": [0],
+      //         "visible": false,
+      //         "searchable": false,
 
-          },
+      //     },
           
-          {
-            orderable: false,
-            targets: "no-sort"
+      //     {
+      //       orderable: false,
+      //       targets: "no-sort"
+      //     }
+      //   ],
+      //   order: [[1, 'desc']]
+      // });
+      // $('#registered-patients-card tbody').on( 'click', 'tr', function () {
+      //     // console.log( table.row( this ).data() );
+      //     var data = table.row( this ).data();
+      //     // var patient_name = data.title + " " + data.first_name + " " + data.last_name;
+      //     performActionOnPatient(data.id,data.patient_name)
+          
+      // } );
+      // $("#registered-patients-card").show("fast");
+
+
+      elem = $(elem);
+      $(".spinner-overlay").show();
+          
+      var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' . $fourth_addition .'/view_all_registered_patients_pharmacy'); ?>";
+          
+      
+      $.ajax({
+        url : url,
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "show_records=true",
+        success : function (response) {
+          console.log(response)
+          $(".spinner-overlay").hide();
+          if(response.success == true){
+            var messages = response.messages;
+            
+            $("#perform-functions-card").hide("fast");
+            $("#registered-patients-card .card-body").html(messages);
+            // $('.my-select').selectpicker();
+            $("#registered-patients-card #registered-patients-table").DataTable();
+            $("#registered-patients-card").show();
+
+            
           }
-        ],
-        order: [[1, 'desc']]
+          else{
+           $.notify({
+            message:"Sorry Something Went Wrong"
+            },{
+              type : "warning"  
+            });
+          }
+        },
+        error: function (jqXHR,textStatus,errorThrown) {
+          $(".spinner-overlay").hide();
+          $.notify({
+          message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+          },{
+            type : "danger"  
+          });
+        }
       });
-      $('#registered-patients-card tbody').on( 'click', 'tr', function () {
-          // console.log( table.row( this ).data() );
-          var data = table.row( this ).data();
-          // var patient_name = data.title + " " + data.first_name + " " + data.last_name;
-          performActionOnPatient(data.id,data.patient_name)
-          
-      } );
-      $("#registered-patients-card").show("fast");
     }, function(dismiss){
       if(dismiss == 'cancel'){
         registered_patient = false;

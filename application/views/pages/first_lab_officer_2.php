@@ -46,6 +46,30 @@
   var additional_patient_test_info = [];
   var balance = 0;
   var sub_total_balance = 0;
+  var nav_type = 2;
+
+  function getTodayCurrentFullDate(){
+    var date = new Date();
+
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
+
+  function getYesterdayCurrentFullDate(){
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+
+    // let day = date.getDate();
+    // let month = date.getMonth() + 1;
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
  
   function copyText(text) {
     /* Get the text field */
@@ -104,6 +128,7 @@
     
 
   function loadPatientInitiationCodeTable(initiation_code,type) {
+    nav_type = type
     var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/get_tests_initiation_code_teller'); ?>"
     $(".spinner-overlay").show();
     $.ajax({
@@ -343,7 +368,7 @@
                       },{
                         type : "success"  
                       });
-                      loadPatientInitiationCodeTable(initiation_code,2)
+                      loadPatientInitiationCodeTable(initiation_code, nav_type)
                     }else if(response.not_valid_number){
                       swal({
                         type: 'error',
@@ -611,99 +636,201 @@
     }
 
     function loadPreviousTransactions(elem) {
-      
+
+
+      elem = $(elem);
+    
+
+      var start_date = getYesterdayCurrentFullDate();
+      var end_date = getTodayCurrentFullDate();
+      console.log(start_date + " " + end_date)
+      $(".spinner-overlay").show();
       var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/get_initiation_codes_teller'); ?>"
+      
+      $.ajax({
+        url : url,
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+        success : function (response) {
+          console.log(response)
+          $(".spinner-overlay").hide();
+          if(response.success == true){
+            var messages = response.messages;
+            
+            $("#input-patient-code-modal").modal("hide");
+            $("#main-card").hide();
+            $("#initiation-codes-card .card-title").html("Previously Initiated Patients");
+            $("#initiation-codes-card .card-body").html(messages);
+            // $('.my-select').selectpicker();
+            $("#initiation-codes-card #initiation-codes-table").DataTable();
+            $("#initiation-codes-card").show();
+          }
+          else{
+           $.notify({
+            message:"Sorry Something Went Wrong"
+            },{
+              type : "warning"  
+            });
+          }
+        },
+        error: function (jqXHR,textStatus,errorThrown) {
+          $(".spinner-overlay").hide();
+          $.notify({
+          message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+          },{
+            type : "danger"  
+          });
+        }
+      });
+      
+      // var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/get_initiation_codes_teller'); ?>"
       
       
    
-      $("#input-patient-code-modal").modal("hide");
-      $("#main-card").hide();
-      var html = `<p class="text-primary">Click Patient To Perform Action.</p><div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="initiation-codes-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">Initiation Code</th><th class="no-sort">Lab Id</th><th class="no-sort">Initiation Type</th><th class="no-sort">No. Of Tests Requested</th><th class="no-sort">Total Cost</th><th class="no-sort">Amount Paid</th><th class="no-sort">Balance</th><th class="no-sort">Patient Username</th><th class="no-sort">Time Of Initiation</th></tr></thead></table></div>`;
+      // $("#input-patient-code-modal").modal("hide");
+      // $("#main-card").hide();
+      // var html = `<p class="text-primary">Click Patient To Perform Action.</p><div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="initiation-codes-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">Initiation Code</th><th class="no-sort">Lab Id</th><th class="no-sort">Initiation Type</th><th class="no-sort">No. Of Tests Requested</th><th class="no-sort">Total Cost</th><th class="no-sort">Amount Paid</th><th class="no-sort">Balance</th><th class="no-sort">Patient Username</th><th class="no-sort">Time Of Initiation</th></tr></thead></table></div>`;
                           
-      $("#initiation-codes-card .card-body").html(html);
+      // $("#initiation-codes-card .card-body").html(html);
     
 
-      var table = $("#initiation-codes-card #initiation-codes-table").DataTable({
+      // var table = $("#initiation-codes-card #initiation-codes-table").DataTable({
         
-        initComplete : function() {
-          var self = this.api();
-          var filter_input = $('#initiation-codes-card .dataTables_filter input').unbind();
-          var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
-              self.search(filter_input.val()).draw();
-          });
-          var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
-              filter_input.val('');
-              search_button.click();
-          });
+      //   initComplete : function() {
+      //     var self = this.api();
+      //     var filter_input = $('#initiation-codes-card .dataTables_filter input').unbind();
+      //     var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
+      //         self.search(filter_input.val()).draw();
+      //     });
+      //     var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
+      //         filter_input.val('');
+      //         search_button.click();
+      //     });
 
-          $(document).keypress(function (event) {
-              if (event.which == 13) {
-                  search_button.click();
-              }
-          });
+      //     $(document).keypress(function (event) {
+      //         if (event.which == 13) {
+      //             search_button.click();
+      //         }
+      //     });
 
-          $('#initiation-codes-card .dataTables_filter').append(search_button, clear_button);
-        },
-        'processing': true,
-         "ordering": true,
-        'serverSide': true,
-        'serverMethod': 'post',
-        'ajax': {
-           'url': url
-        },
-        "language": {
-          processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
-        },
-        search: {
-            return: true,
-        },
-        'columns': [
-          { data: 'id' },
-          { data: 'index' },
-          { data: 'patient_name' },
-          { data: 'initiation_code' },
-          { data: 'lab_id' },
-          { data: 'initiation_type' },
-          { data: 'tests_num' },
-          { data: 'total_cost' },
-          { data: 'amount_paid' },
-          { data: 'balance' },
-          { data: 'patient_username' },
-          { data: 'initiation_time' },
-        ],
-        'columnDefs': [
-          {
-              "targets": [0],
-              "visible": false,
-              "searchable": false,
+      //     $('#initiation-codes-card .dataTables_filter').append(search_button, clear_button);
+      //   },
+      //   'processing': true,
+      //    "ordering": true,
+      //   'serverSide': true,
+      //   'serverMethod': 'post',
+      //   'ajax': {
+      //      'url': url
+      //   },
+      //   "language": {
+      //     processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
+      //   },
+      //   search: {
+      //       return: true,
+      //   },
+      //   'columns': [
+      //     { data: 'id' },
+      //     { data: 'index' },
+      //     { data: 'patient_name' },
+      //     { data: 'initiation_code' },
+      //     { data: 'lab_id' },
+      //     { data: 'initiation_type' },
+      //     { data: 'tests_num' },
+      //     { data: 'total_cost' },
+      //     { data: 'amount_paid' },
+      //     { data: 'balance' },
+      //     { data: 'patient_username' },
+      //     { data: 'initiation_time' },
+      //   ],
+      //   'columnDefs': [
+      //     {
+      //         "targets": [0],
+      //         "visible": false,
+      //         "searchable": false,
 
-          },
+      //     },
           
-          {
-            orderable: false,
-            targets: "no-sort"
-          }
-        ],
-        order: [[1, 'desc']]
-      });
-      $('#initiation-codes-table tbody').on( 'click', 'tr', function () {
+      //     {
+      //       orderable: false,
+      //       targets: "no-sort"
+      //     }
+      //   ],
+      //   order: [[1, 'desc']]
+      // });
+      // $('#initiation-codes-table tbody').on( 'click', 'tr', function () {
 
-          // console.log( table.row( this ).data() );
-          var data = table.row( this ).data();
+      //     // console.log( table.row( this ).data() );
+      //     var data = table.row( this ).data();
           
-          loadPatientInitiationCodeTable(data.initiation_code,1)
+      //     loadPatientInitiationCodeTable(data.initiation_code,1)
 
-          if ( $(this).hasClass('selected') ) {
-              $(this).removeClass('selected');
-          }
-          else {
-              table.$('tr.selected').removeClass('selected');
-              $(this).addClass('selected');
-          }
-      } );
-      $("#initiation-codes-card").show("fast");
+      //     if ( $(this).hasClass('selected') ) {
+      //         $(this).removeClass('selected');
+      //     }
+      //     else {
+      //         table.$('tr.selected').removeClass('selected');
+      //         $(this).addClass('selected');
+      //     }
+      // } );
+      // $("#initiation-codes-card").show("fast");
        
 
+           
+    }
+
+    function selectTimeRangePreviousInitiationsChanged(elem) {
+
+
+      elem = $(elem);
+      var start_date = elem.parent().find('.start-date').val();
+      var end_date = elem.parent().find('.end-date').val();
+      
+
+      console.log(start_date)
+      console.log(end_date)
+      
+      
+      $(".spinner-overlay").show();
+      var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/get_initiation_codes_teller'); ?>"
+      
+      $.ajax({
+        url : url,
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+        success : function (response) {
+          console.log(response)
+          $(".spinner-overlay").hide();
+          if(response.success == true){
+            var messages = response.messages;
+            
+            
+            $("#initiation-codes-card .card-body").html(messages);
+            // $('.my-select').selectpicker();
+            $("#initiation-codes-card #initiation-codes-table").DataTable();
+          }
+          else{
+           $.notify({
+            message:"Sorry Something Went Wrong"
+            },{
+              type : "warning"  
+            });
+          }
+        },
+        error: function (jqXHR,textStatus,errorThrown) {
+          $(".spinner-overlay").hide();
+          $.notify({
+          message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+          },{
+            type : "danger"  
+          });
+        }
+      });
+      
+      
            
     }
 

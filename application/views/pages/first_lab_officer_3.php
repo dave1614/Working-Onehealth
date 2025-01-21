@@ -45,6 +45,29 @@
   var patient_facility_id = "";
   var additional_patient_test_info = [];
 
+  function getTodayCurrentFullDate(){
+    var date = new Date();
+
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
+
+  function getYesterdayCurrentFullDate(){
+    var date = new Date();
+    date.setDate(date.getDate() - 1);
+
+    // let day = date.getDate();
+    // let month = date.getMonth() + 1;
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
+
  
   function copyText(text) {
     /* Get the text field */
@@ -586,94 +609,189 @@
     function processSample(elem,evt) {
       
       
-      var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/get_patients_phlebotomist'); ?>"
+      // var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/get_patients_phlebotomist'); ?>"
           
 
       
-      $("#main-card").hide();
-      var html = `<p class="text-primary">Click Patient To Perform Action.</p><div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="process-sample-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">Patient Username</th><th class="no-sort">Initiation Code</th><th class="no-sort">Lab Id</th><th class="no-sort">No. Of Tests Requested</th><th class="no-sort">Time Of Last Payment</th></tr></thead></table></div>`;
+      // $("#main-card").hide();
+      // var html = `<p class="text-primary">Click Patient To Perform Action.</p><div class="table-div material-datatables table-responsive" style=""><table class="table table-test table-striped table-bordered nowrap hover display" id="process-sample-table" cellspacing="0" width="100%" style="width:100%"><thead><tr><th>Id</th><th class="sort">#</th><th class="no-sort">Patient Name</th><th class="no-sort">Patient Username</th><th class="no-sort">Initiation Code</th><th class="no-sort">Lab Id</th><th class="no-sort">No. Of Tests Requested</th><th class="no-sort">Time Of Last Payment</th></tr></thead></table></div>`;
                           
-      $("#process-sample-card .card-body").html(html);
+      // $("#process-sample-card .card-body").html(html);
 
 
 
-      var table = $("#process-sample-card #process-sample-table").DataTable({
+      // var table = $("#process-sample-card #process-sample-table").DataTable({
         
-        initComplete : function() {
-          var self = this.api();
-          var filter_input = $('#process-sample-card  .dataTables_filter input').unbind();
-          var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
-              self.search(filter_input.val()).draw();
-          });
-          var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
-              filter_input.val('');
-              search_button.click();
-          });
+      //   initComplete : function() {
+      //     var self = this.api();
+      //     var filter_input = $('#process-sample-card  .dataTables_filter input').unbind();
+      //     var search_button = $('<button type="button" class="p-3 btn btn-primary btn-fab btn-fab-mini btn-round"><i class="fa fa-search"></i></button>').click(function() {
+      //         self.search(filter_input.val()).draw();
+      //     });
+      //     var clear_button = $('<button type="button" class="p-3 btn btn-danger btn-fab btn-fab-mini btn-round"><i class="fa fa fa-times"></i></button>').click(function() {
+      //         filter_input.val('');
+      //         search_button.click();
+      //     });
 
-          $(document).keypress(function (event) {
-              if (event.which == 13) {
-                  search_button.click();
-              }
-          });
+      //     $(document).keypress(function (event) {
+      //         if (event.which == 13) {
+      //             search_button.click();
+      //         }
+      //     });
 
-          $('#process-sample-card  .dataTables_filter').append(search_button, clear_button);
-        },
-        'processing': true,
-         "ordering": true,
-        'serverSide': true,
-        'serverMethod': 'post',
-        'ajax': {
-           'url': url
-        },
-        "language": {
-          processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
-        },
-        search: {
-            return: true,
-        },
-        'columns': [
-          { data: 'id' },
-          { data: 'index' },
-          { data: 'patient_name' },
-          { data: 'patient_username' },
-          { data: 'initiation_code' },
-          { data: 'lab_id' },
-          { data: 'tests_num' },
-          { data: 'last_payment_time' },
-        ],
-        'columnDefs': [
-          {
-              "targets": [0],
-              "visible": false,
-              "searchable": false,
+      //     $('#process-sample-card  .dataTables_filter').append(search_button, clear_button);
+      //   },
+      //   'processing': true,
+      //    "ordering": true,
+      //   'serverSide': true,
+      //   'serverMethod': 'post',
+      //   'ajax': {
+      //      'url': url
+      //   },
+      //   "language": {
+      //     processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> '
+      //   },
+      //   search: {
+      //       return: true,
+      //   },
+      //   'columns': [
+      //     { data: 'id' },
+      //     { data: 'index' },
+      //     { data: 'patient_name' },
+      //     { data: 'patient_username' },
+      //     { data: 'initiation_code' },
+      //     { data: 'lab_id' },
+      //     { data: 'tests_num' },
+      //     { data: 'last_payment_time' },
+      //   ],
+      //   'columnDefs': [
+      //     {
+      //         "targets": [0],
+      //         "visible": false,
+      //         "searchable": false,
 
-          },
+      //     },
           
-          {
-            orderable: false,
-            targets: "no-sort"
-          }
-        ],
-        order: [[1, 'desc']]
-      });
-      $('#process-sample-table tbody').on( 'click', 'tr', function () {
+      //     {
+      //       orderable: false,
+      //       targets: "no-sort"
+      //     }
+      //   ],
+      //   order: [[1, 'desc']]
+      // });
+      // $('#process-sample-table tbody').on( 'click', 'tr', function () {
 
-          // console.log( table.row( this ).data() );
-          var data = table.row( this ).data();
+      //     // console.log( table.row( this ).data() );
+      //     var data = table.row( this ).data();
           
           
-          loadPatientInfo(data.lab_id)
+      //     loadPatientInfo(data.lab_id)
 
-          if ( $(this).hasClass('selected') ) {
-              $(this).removeClass('selected');
-          }
-          else {
-              table.$('tr.selected').removeClass('selected');
-              $(this).addClass('selected');
-          }
-      } );
-      $("#process-sample-card").show();
+      //     if ( $(this).hasClass('selected') ) {
+      //         $(this).removeClass('selected');
+      //     }
+      //     else {
+      //         table.$('tr.selected').removeClass('selected');
+      //         $(this).addClass('selected');
+      //     }
+      // } );
+      // $("#process-sample-card").show();
       
+
+      elem = $(elem);
+
+
+      var start_date = getYesterdayCurrentFullDate();
+      var end_date = getTodayCurrentFullDate();
+      console.log(start_date + " " + end_date)
+      $(".spinner-overlay").show();
+      
+      var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/get_patients_phlebotomist'); ?>"
+      
+      $.ajax({
+        url : url,
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+        success : function (response) {
+          console.log(response)
+          $(".spinner-overlay").hide();
+          if(response.success == true){
+            var messages = response.messages;
+            
+            $("#main-card").hide();
+            // $("#view-laboratory-payments-card .card-title").html("Laboratory Payments For None Fee Payment Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
+            $("#process-sample-card .card-body").html(messages);
+            // $('.my-select').selectpicker();
+            $("#process-sample-card #process-sample-table").DataTable();
+            $("#process-sample-card").show();
+          }
+          else{
+           $.notify({
+            message:"Sorry Something Went Wrong."
+            },{
+              type : "warning"  
+            });
+          }
+        },
+        error: function (jqXHR,textStatus,errorThrown) {
+          $(".spinner-overlay").hide();
+          $.notify({
+          message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+          },{
+            type : "danger"  
+          });
+        }
+      });
+    }
+
+    function selectTimeRangeLabPhlebotomist(elem,event){
+      elem = $(elem);
+      var start_date = elem.parent().find('.start-date').val();
+      var end_date = elem.parent().find('.end-date').val();
+      
+
+      console.log(start_date)
+      console.log(end_date)
+    
+      
+      $(".spinner-overlay").show();
+          
+      var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/get_patients_phlebotomist'); ?>";
+      
+      $.ajax({
+        url : url,
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+        success : function (response) {
+          console.log(response)
+          $(".spinner-overlay").hide();
+          if(response.success == true && response.messages != ""){
+            var messages = response.messages;
+            $("#process-sample-card .card-body").html(messages);
+            // $('.my-select').selectpicker();
+            $("#process-sample-card #process-sample-table").DataTable();
+          }
+          else{
+           $.notify({
+            message:"No Record To Display"
+            },{
+              type : "warning"  
+            });
+          }
+        },
+        error: function (jqXHR,textStatus,errorThrown) {
+          $(".spinner-overlay").hide();
+          $.notify({
+          message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+          },{
+            type : "danger"  
+          });
+        }
+      });
     }
 
     function goBackFromProcessSampleCard(elem,evt){

@@ -9134,7 +9134,7 @@
         }
         else{
          $.notify({
-          message:"No Record To Display"
+          message:"Sorry Something Went Wrong"
           },{
             type : "warning"  
           });
