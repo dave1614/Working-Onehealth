@@ -227,6 +227,48 @@
     }
   }
 
+  function getPatientAge(dob) {
+    let val = "";
+    let origDate = new Date(dob);
+    let currDate = new Date();
+    
+    // Calculate difference in seconds
+    let dateDiffSecs = Math.floor((currDate - origDate) / 1000);
+    
+    if (dateDiffSecs > 0) {
+        let dateDiffMinutes = Math.floor(dateDiffSecs / 60);
+        let dateDiffHours = Math.floor(dateDiffMinutes / 60);
+        let dateDiffDays = Math.floor(dateDiffHours / 24);
+        let dateDiffWeeks = Math.floor(dateDiffDays / 7);
+        let dateDiffMonths = Math.floor(dateDiffWeeks / 4.345);
+        let dateDiffYears = Math.floor(dateDiffMonths / 12);
+        
+        if (dateDiffMinutes < 1) {
+            val = "";
+        } else if (dateDiffHours < 1) {
+            val = dateDiffMinutes + " minute(s)";
+        } else if (dateDiffDays < 1) {
+            val = dateDiffHours + " hour(s)";
+        } else if (dateDiffWeeks < 1) {
+            val = dateDiffDays + " day(s)";
+        } else if (dateDiffMonths < 1) {
+            val = dateDiffWeeks + " week(s)";
+        } else if (dateDiffYears < 1) {
+            val = dateDiffMonths + " month(s)";
+        } else {
+            val = dateDiffYears + " year(s)";
+        }
+    } else {
+        return false;
+    }
+    
+    return val;
+}
+
+// Example usage:
+// getPatientAge("2000-01-01"); // Returns age in appropriate units
+
+
   function viewRegisteredPatients (elem,evt) {
     // var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/view_all_registered_patients_front_desk_lab'); ?>";
    
@@ -327,9 +369,26 @@
           $("#main-card").hide("fast");
           $("#registered-patients-card .card-body").html(messages);
           // $('.my-select').selectpicker();
-          $("#registered-patients-card #registered-patients-table").DataTable();
-          $("#registered-patients-card").show();
+          
 
+          $(".spinner-overlay").show();
+          $( "#registered-patients-card .dob_age" ).each(function( index ) {
+            // console.log( index + ": " + $( this ).text() );
+
+            $( this ).html(getPatientAge($( this ).text()))
+          });
+
+
+          setTimeout(() => {
+            $(".spinner-overlay").hide();
+            $("#registered-patients-card #registered-patients-table").DataTable();
+            $("#registered-patients-card").show();
+          }, 1500)
+
+          
+
+          
+          
           
         }
         else{

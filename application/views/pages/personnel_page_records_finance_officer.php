@@ -52,6 +52,22 @@
     $("#hospital-teller-card").show();
   }
 
+  function viewDentalClinicPayments (elem,evt) {
+    evt.preventDefault();
+    $("#choose-action-card").hide();
+    $("#dental-clnic-payments-card").show();
+  }
+
+
+  
+
+  function goBackDentalClinicPaymentsCard (elem,evt) {
+    
+    $("#choose-action-card").show();
+    $("#dental-clnic-payments-card").hide();
+  }
+
+
   function goBackHospitalTellerCard (elem,evt) {
     $("#choose-action-card").show();
     $("#hospital-teller-card").hide();
@@ -76,6 +92,8 @@
   function viewClinicServices (elem,evt) {
     $("#choose-patient-type-services-clinic").modal("show");
   }
+
+
 
   function viewOutstandingBillsCollected (elem,evt) {
     elem = $(elem);
@@ -428,6 +446,7 @@
 
   function getTodayCurrentFullDate(){
     var date = new Date();
+    date.setDate(date.getDate() + 1);
 
     let month = (date.getMonth() + 1).toString().padStart(2, '0');
     let day = date.getDate().toString().padStart(2, '0');
@@ -438,7 +457,7 @@
 
    function getYesterdayCurrentFullDate(){
     var date = new Date();
-    date.setDate(date.getDate() - 1);
+    // date.setDate(date.getDate() - 1);
 
     // let day = date.getDate();
     // let month = date.getMonth() + 1;
@@ -799,6 +818,57 @@
     $("#clinic-consultation-companies-card").hide();
   }
 
+  
+
+   function viewDentalClinicConsultationFees (elem,evt) {
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_companies_with_dental_clinic_consultation_fees'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true",
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#dental-clnic-payments-card").hide();
+          $("#dental-clinic-consultation-companies-card .card-title").html("Insurance And Retainership Dental Clinic Consultation Bills(None Fee Paying)");
+          $("#dental-clinic-consultation-companies-card .card-body").html(messages);
+          
+          $("#dental-clinic-consultation-companies-card #dental-clinic-consultation-companies-table").DataTable();
+          $("#dental-clinic-consultation-companies-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+  
+  function goBackFromDentalClinicConsultationCompaniesCard() {
+    $("#dental-clnic-payments-card").show();
+    
+    $("#dental-clinic-consultation-companies-card").hide();
+  }
+
   function viewNonePayingConsultationPayments (elem,evt) {
     $(".spinner-overlay").show();
         
@@ -842,6 +912,109 @@
     });
   }
 
+
+  function viewDentalClinicConsultationPaymentsInfo (elem,evt) {
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    var company_id = elem.attr("data-company-id");
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_dental_clinic_consultations_fees_by_company_id'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#dental-clinic-consultation-companies-card").hide();
+          $("#view-dental-consultation-payments-hmo-card .card-title").html("Dental Clinic Consultation Payments For None Fee Paying Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
+          $("#view-dental-consultation-payments-hmo-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-dental-consultation-payments-hmo-card #dental-consultation-table").DataTable();
+          $("#view-dental-consultation-payments-hmo-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectTimeRangeDentalConsultationChangedNoneFeePaying(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_dental_clinic_consultations_fees_by_company_id'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true && response.messages != ""){
+          var messages = response.messages;
+          $("#view-dental-consultation-payments-hmo-card .card-body").html(messages);
+          
+          $("#view-dental-consultation-payments-hmo-card #dental-consultation-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromViewDentalConsultationPaymentsHmoCard() {
+    $("#dental-clinic-consultation-companies-card").show();
+    
+    $("#view-dental-consultation-payments-hmo-card").hide();
+  }
 
   function viewNoneFeePayingConsultationPaymentsInfo (elem,evt) {
     elem = $(elem);
@@ -1888,6 +2061,55 @@
     $("#view-services-payments-hmo-card-clinic").hide();
   }
 
+  function viewDentalClinicServices (elem,evt) {
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_companies_with_dental_clinics_services_fees'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true",
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#dental-clnic-payments-card").hide();
+          
+          $("#dental-clinic-services-companies-card .card-title").html("Insurance And Retainership Dental Clinic Services Bills(None Fee Paying)");
+          $("#dental-clinic-services-companies-card .card-body").html(messages);
+          
+          $("#dental-clinic-services-companies-card #dental-clinic-services-companies-table").DataTable();
+          $("#dental-clinic-services-companies-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromDentalClinicServicesCompaniesCard() {
+    $("#dental-clnic-payments-card").show();
+          
+    $("#dental-clinic-services-companies-card").hide();
+  }
+
   function viewNonePayingClinicServices (elem,evt) {
     $(".spinner-overlay").show();
         
@@ -1974,6 +2196,8 @@
     });
   }
 
+
+
   function selectTimeRangeClinicServicesChangedNoneFeePaying(elem,event){
     elem = $(elem);
     var start_date = elem.parent().find('.start-date').val();
@@ -2020,6 +2244,108 @@
         });
       }
     });
+  }
+
+  function selectTimeRangeDentalClinicServicesChanged(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_dental_clinic_services_fees_by_company_id'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#view-services-payments-hmo-card-dental-clinic .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-services-payments-hmo-card-dental-clinic #dental-clinic-services-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function viewDentalClinicServicesPaymentsInfo (elem,evt) {
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    var company_id = elem.attr("data-company-id");
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_dental_clinic_services_fees_by_company_id'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#dental-clinic-services-companies-card").hide();
+          $("#view-services-payments-hmo-card-dental-clinic .card-title").html("Dental Clinic Services Payments For None Fee Paying Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
+          $("#view-services-payments-hmo-card-dental-clinic .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-services-payments-hmo-card-dental-clinic #dental-clinic-services-table").DataTable();
+          $("#view-services-payments-hmo-card-dental-clinic").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromViewServicesPaymentsHmoCardDentalClinic () {
+    $("#dental-clinic-services-companies-card").show();
+    
+    $("#view-services-payments-hmo-card-dental-clinic").hide();
   }
 
   function viewNoneFeePayingClinicServicesPaymentsInfo (elem,evt) {
@@ -2622,6 +2948,13 @@
     $("#view-pharmacy-payments-card").hide();
   }
 
+  
+
+  function individualPatientFinances (elem,evt) {
+    evt.preventDefault();
+    $("#choose-patient-type-individual-finances").modal("show");
+  }
+
   function viewLaboratory (elem,evt) {
     evt.preventDefault();
     $("#choose-patient-type-laboratory").modal("show");
@@ -3121,6 +3454,392 @@
         });
       }
     });
+  }
+
+  function viewRadiology(elem, evt){
+    viewNonePayingRadiology(elem, evt)
+  }
+
+  function viewNonePayingRadiology(elem,evt) {
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_companies_with_none_fee_paying_radiology'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true",
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true && response.messages != ""){
+          var messages = response.messages;
+          
+          $("#choose-action-card").hide();
+          $("#radiology-companies-card .card-title").html("Insurance And Retainership Radiology Bills(None Fee Paying)");
+          $("#radiology-companies-card .card-body").html(messages);
+          
+          $("#radiology-companies-card #radiology-companies-table").DataTable();
+          $("#radiology-companies-card").show();
+        }
+        else{
+         $.notify({
+          message:"No Record To Display"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromRadiologyCompaniesCard(){
+
+    $("#choose-action-card").show();
+    
+    $("#radiology-companies-card").hide();
+  }
+
+ 
+
+  function viewNoneFeePayingRadiologyInfo (elem,evt) {
+    elem = $(elem);
+
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    var company_id = elem.attr("data-company-id");
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_radiology_fees_by_company_id_none_fee_paying'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#radiology-companies-card").hide();
+          $("#view-radiology-payments-card .card-title").html("Radiology Payments For None Fee Payment Patients<br>Company Id: <em class='text-primary'>"+company_id+"</em>");
+          $("#view-radiology-payments-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-radiology-payments-card #radiology-table").DataTable();
+          $("#view-radiology-payments-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong."
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectTimeRangeRadiologyChangedNonePaying(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var company_id = elem.attr("data-company-id");
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(company_id)
+        
+    $(".spinner-overlay").show();
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_patients_radiology_fees_by_company_id_none_fee_paying'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&company_id="+company_id,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#view-radiology-payments-card .card-body").html(messages);
+          // $('.my-select').selectpicker();
+          $("#view-radiology-payments-card #radiology-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong."
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+
+  function goBackFromViewRadiologyPaymentsCard(){
+    $("#radiology-companies-card").show();
+    $("#view-radiology-payments-card").hide();
+  }
+
+  function viewIndividualFinancesNonePaying(elem,evt) {
+    elem = $(elem);
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    var limit_amount = 0.00;
+    
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_all_none_paying_patients_individual_finances'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&limit_amount="+limit_amount,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#choose-patient-type-individual-finances").modal("hide");
+          $("#choose-action-card").hide();
+          $("#individual-finances-patients-none-paying-card .card-body").html(messages);
+          
+          $("#individual-finances-patients-none-paying-card #individual-finances-patients-none-paying-table").DataTable();
+          $("#individual-finances-patients-none-paying-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function clearRangesIndividualPatientPayments(elem, event){
+    elem = $(elem);
+    elem.parent().find('.start-date').val(getYesterdayCurrentFullDate());
+    elem.parent().find('.end-date').val(getTodayCurrentFullDate());
+    elem.parent().find('.limit-amount').val(0);
+  }
+
+  function selectTimeRangeIndividualPatientPayments(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    var limit_amount = elem.parent().find('.limit-amount').val();
+
+    console.log(start_date)
+    console.log(end_date)
+    console.log(limit_amount)
+    
+    
+    $(".spinner-overlay").show();
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/get_all_none_paying_patients_individual_finances'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&limit_amount="+limit_amount,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#individual-finances-patients-none-paying-card .card-body").html(messages);
+
+          $("#individual-finances-patients-none-paying-card #individual-finances-patients-none-paying-table").DataTable();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromIndividualPatientsNonePayingCard(elem, evt){
+    $("#choose-patient-type-individual-finances").modal("show");
+    $("#choose-action-card").show();
+    
+    $("#individual-finances-patients-none-paying-card").hide();
+  }
+
+  function viewPatientsIndividualPayments(elem,evt, id, user_id, patient_full_name){
+    elem = $(elem);
+    var start_date = elem.attr("data-start-date");
+    var end_date = elem.attr("data-end-date");
+    var limit_amount = elem.attr("data-limit-amount");
+
+    console.log(id)
+    console.log(user_id)
+    console.log(patient_full_name)
+    console.log(start_date)
+    console.log(end_date)
+    console.log(limit_amount)
+
+    $(".spinner-overlay").show();
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/view_patients_individual_finances'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&patient_facility_id="+id+"&user_id="+user_id+"&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#individual-finances-patients-none-paying-card").hide();
+          $("#individual-patient-finances-none-paying-card .card-title").html("Patient Individual Payments");
+          $("#individual-patient-finances-none-paying-card .card-body").html(messages);
+          
+         
+          $("#individual-patient-finances-none-paying-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+
+  }
+
+  function selectTimeRangeIndividualPatient(elem,evt, id, user_id){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    
+    $(".spinner-overlay").show();
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/view_patients_individual_finances'); ?>";
+    
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&patient_facility_id="+id+"&user_id="+user_id+"&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#individual-patient-finances-none-paying-card .card-body").html(messages);
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function clearRangesIndividualPatient(elem, event){
+    elem = $(elem);
+    elem.parent().find('.start-date').val(getYesterdayCurrentFullDate());
+    elem.parent().find('.end-date').val(getTodayCurrentFullDate());
+  }
+
+  function goBackFromIndividualPatientFinancesNonePayingCard(elem, evt){
+    $("#individual-finances-patients-none-paying-card").show();
+         
+    $("#individual-patient-finances-none-paying-card").hide();
   }
 
   function viewNonePayingLaboratory(elem,evt) {
@@ -4144,8 +4863,858 @@
     $("#account-reports-card").show();
     $("#account-reports-hospital-teller-card").hide();
   }
+  
+
+  function accountReportsRadiology(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_radiology'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-card").hide();
+          $("#account-reports-radiology-card .card-title").html("Account reports for radiology payments");
+          $("#account-reports-radiology-card .card-body").html(messages);
+          
+          $("#account-reports-radiology-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeRadiology(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_radiology'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-radiology-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromAccountReportsRadiologyCard(elem, evt){
+    $("#account-reports-card").show();
+    
+    $("#account-reports-radiology-card").hide();
+  }
 
   
+
+  function accountReportsPharmacy(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_pharmacy'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-card").hide();
+          $("#account-reports-pharmacy-card .card-title").html("Account reports for pharmacy payments");
+          $("#account-reports-pharmacy-card .card-body").html(messages);
+          
+          $("#account-reports-pharmacy-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangePharmacy(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_pharmacy'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-pharmacy-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromAccountReportsPharmacyCard(elem, evt){
+    $("#account-reports-card").show();
+    
+    $("#account-reports-pharmacy-card").hide();
+  }
+
+  function accountReportsLaboratory(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_laboratory'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-card").hide();
+          $("#account-reports-laboratory-card .card-title").html("Account reports for laboratory payments");
+          $("#account-reports-laboratory-card .card-body").html(messages);
+          
+          $("#account-reports-laboratory-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeLaboratory(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_laboratory'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-laboratory-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromAccountReportsLaboratoryCard(elem, evt){
+    $("#account-reports-card").show();
+    
+    $("#account-reports-laboratory-card").hide();
+  }
+  
+  
+
+  function accountReportsDentalClinicServices(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_dental_clinic_services_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-card").hide();
+          $("#account-reports-dental-clinic-services-card .card-title").html("Account reports for dental clinic services");
+          $("#account-reports-dental-clinic-services-card .card-body").html(messages);
+          
+          $("#account-reports-dental-clinic-services-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeDentalClinicServices(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_dental_clinic_services_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-dental-clinic-services-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromAccountReportsDentalClinicServicesCard() {
+    $("#account-reports-card").show();
+    
+    $("#account-reports-dental-clinic-services-card").hide();
+  }
+
+  function viewAccountReportClinicServices(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_clinic_services_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-hospital-teller-card").hide();
+          $("#account-reports-clinic-services-card .card-title").html("Account reports for clinic services");
+          $("#account-reports-clinic-services-card .card-body").html(messages);
+          
+          $("#account-reports-clinic-services-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeClinicServices(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_clinic_services_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-clinic-services-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromAccountReportsClinicServicesCard(elem ,evt) {
+    $("#account-reports-clinic-services-card").hide();
+    $("#account-reports-hospital-teller-card").show();
+    
+    
+  }
+  
+
+  function viewAccountReportWardServices(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_ward_services_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-hospital-teller-card").hide();
+          $("#account-reports-ward-services-card .card-title").html("Account reports for ward services");
+          $("#account-reports-ward-services-card .card-body").html(messages);
+          
+          $("#account-reports-ward-services-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeWardServices(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_ward_services_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-ward-services-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromAccountReportsWardServicesCard(elem ,evt) {
+    $("#account-reports-ward-services-card").hide();
+    $("#account-reports-hospital-teller-card").show();
+    
+    
+  }
+  
+
+  function viewAccountReportWardAdmission(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_ward_admission_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-hospital-teller-card").hide();
+          $("#account-reports-ward-admission-card .card-title").html("Account reports for ward admission");
+          $("#account-reports-ward-admission-card .card-body").html(messages);
+          
+          $("#account-reports-ward-admission-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeWardAdmission(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_ward_admission_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-ward-admission-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromAccountReportsWardAdmissionCard(elem ,evt) {
+    $("#account-reports-ward-admission-card").hide();
+    $("#account-reports-hospital-teller-card").show();
+    
+    
+  }
+  
+  
+
+  function accountReportsDentalClinicConsultations(elem, evt){
+    evt.preventDefault();
+
+    elem = $(elem);
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+    
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_dental_clinic_consultation_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-card").hide();
+          $("#account-reports-dental-consultation-fee-card .card-title").html("Account reports for patients dental clinic consultations");
+          $("#account-reports-dental-consultation-fee-card .card-body").html(messages);
+          
+          $("#account-reports-dental-consultation-fee-card").show();
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function selectAccountReportTimeRangeDentalConsultationFee(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/finance_accounts_report_dental_clinic_consultation_fee'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          
+          $("#account-reports-dental-consultation-fee-card .card-body").html(messages);
+          
+          
+        }
+        else{
+         $.notify({
+          message:"Sorry Something Went Wrong"
+          },{
+            type : "warning"  
+          });
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function goBackFromAccountReportsDentalConsultationFeeCard() {
+    $("#account-reports-card").show();
+    
+    $("#account-reports-dental-consultation-fee-card").hide();
+  }
 
   function viewAccountReportConsultationFees(elem, evt){
     evt.preventDefault();
@@ -4838,10 +6407,32 @@
                 </div>
               </div>
 
+              
+
+              <div class="card" id="view-services-payments-hmo-card-dental-clinic" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromViewServicesPaymentsHmoCardDentalClinic(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
               <div class="card" id="view-services-payments-hmo-card-clinic" style="display: none;">
                 <div class="card-header">
                   <button class="btn btn-round btn-warning" onclick="goBackFromViewServicesPaymentsHmoCardClinic(this,event)">Go Back</button>
                   <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="dental-clinic-services-companies-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromDentalClinicServicesCompaniesCard(this,event)">Go Back</button>
+                  <h3 class="card-title" style="text-transform: capitalize;"></h3>
                 </div>
                 <div class="card-body">
 
@@ -4889,11 +6480,33 @@
                 </div>
               </div>
 
+              
+
+              <div class="card" id="view-dental-consultation-payments-hmo-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromViewDentalConsultationPaymentsHmoCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
 
               <div class="card" id="view-consultation-payments-hmo-card" style="display: none;">
                 <div class="card-header">
                   <button class="btn btn-round btn-warning" onclick="goBackFromViewConsultationPaymentsHmoCard(this,event)">Go Back</button>
                   <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="dental-clinic-consultation-companies-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromDentalClinicConsultationCompaniesCard(this,event)">Go Back</button>
+                  <h3 class="card-title" style="text-transform: capitalize;"></h3>
                 </div>
                 <div class="card-body">
 
@@ -4930,6 +6543,38 @@
                 </div>
               </div>
 
+              <div class="card" id="radiology-companies-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromRadiologyCompaniesCard(this,event)">Go Back</button>
+                  <h3 class="card-title" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+              
+
+              <div class="card" id="individual-patient-finances-none-paying-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromIndividualPatientFinancesNonePayingCard(this,event)">Go Back</button>
+                  <h3 class="card-title" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+              
+
+              <div class="card" id="individual-finances-patients-none-paying-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromIndividualPatientsNonePayingCard(this,event)">Go Back</button>
+                  <h3 class="card-title" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
               <div class="card" id="lab-companies-card" style="display: none;">
                 <div class="card-header">
                   <button class="btn btn-round btn-warning" onclick="goBackFromLabCompaniesCard(this,event)">Go Back</button>
@@ -4946,6 +6591,31 @@
                 </div>
                 <div class="card-body">
                   <button style="margin-top: 50px;" onclick="performActions(this,event)" class="btn btn-info">Perform Actions</button>
+                </div>
+              </div>
+
+              
+
+              <div class="card" id="dental-clnic-payments-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-warning btn-round" onclick="goBackDentalClinicPaymentsCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading">Dental Clinic Payments</h3>
+                </div>
+                <div class="card-body">
+                  <table class="table">
+                    <tbody>
+                      
+                      <tr class="pointer-cursor">
+                        <td>1</td>
+                        <td><a href="#" onclick="viewDentalClinicConsultationFees(this,event)">Consultation Fees</a></td>
+                      </tr>
+                      <tr class="pointer-cursor">
+                        <td>2</td>
+                        <td><a href="#" onclick="viewDentalClinicServices(this,event)">Clinic Services</a></td>
+                      </tr>
+                      
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
@@ -4981,11 +6651,101 @@
                         <td>6</td>
                         <td><a href="#" onclick="viewOutstandingBillsCollected(this,event)">Outstanding Bills Collected</a></td>
                       </tr>
+
+                    
+
+
                       
                      
                       
                     </tbody>
                   </table>
+                </div>
+              </div>
+
+              
+
+              <div class="card" id="account-reports-radiology-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsRadiologyCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="account-reports-pharmacy-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsPharmacyCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="account-reports-laboratory-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsLaboratoryCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              
+
+              <div class="card" id="account-reports-dental-clinic-services-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsDentalClinicServicesCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="account-reports-clinic-services-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsClinicServicesCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="account-reports-ward-services-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsWardServicesCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="account-reports-ward-admission-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsWardAdmissionCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              
+
+              <div class="card" id="account-reports-dental-consultation-fee-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromAccountReportsDentalConsultationFeeCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;"></h3>
+                </div>
+                <div class="card-body">
+
                 </div>
               </div>
 
@@ -5029,15 +6789,15 @@
                       </tr>
                       <tr class="pointer-cursor">
                         <td>3</td>
-                        <td><a href="#" onclick="viewAdmissionFees(this,event)">Wards Admission Fees</a></td>
+                        <td><a href="#" onclick="viewAccountReportWardAdmission(this,event)">Wards Admission Fees</a></td>
                       </tr>
                       <tr class="pointer-cursor">
                         <td>4</td>
-                        <td><a href="#" onclick="viewWardServices(this,event)">Wards Services</a></td>
+                        <td><a href="#" onclick="viewAccountReportWardServices(this,event)">Wards Services</a></td>
                       </tr>
                       <tr class="pointer-cursor">
                         <td>5</td>
-                        <td><a href="#" onclick="viewClinicServices(this,event)">Clinic Services</a></td>
+                        <td><a href="#" onclick="viewAccountReportClinicServices(this,event)">Clinic Services</a></td>
                       </tr>
                       <tr class="pointer-cursor">
                         <td>6</td>
@@ -5065,18 +6825,35 @@
                       </tr>
                       <tr class="pointer-cursor">
                         <td>2</td>
-                        <td><a href="#" onclick="viewPharmacy(this,event)">Pharmacy</a></td>
+                        <td><a href="#" onclick="accountReportsPharmacy(this,event)">Pharmacy</a></td>
                       </tr>
                       
                       <tr class="pointer-cursor">
                         <td>3</td>
-                        <td><a href="#" onclick="viewLaboratory(this,event)">Laboratory</a></td>
+                        <td><a href="#" onclick="accountReportsLaboratory(this,event)">Laboratory</a></td>
                       </tr>
 
                       <tr class="pointer-cursor">
                         <td>4</td>
                         <td><a href="#" onclick="viewMortuary(this,event)">Mortuary</a></td>
                       </tr>
+
+                      <?php if($health_facility_id == 44){ ?>
+                      <tr class="pointer-cursor">
+                        <td>5</td>
+                        <td><a href="#" onclick="accountReportsRadiology(this,event)">Radiology</a></td>
+                      </tr>
+
+                      <tr class="pointer-cursor">
+                        <td>6</td>
+                        <td><a href="#" onclick="accountReportsDentalClinicConsultations(this,event)">Dental Clinic Consultations</a></td>
+                      </tr>
+
+                      <tr class="pointer-cursor">
+                        <td>7</td>
+                        <td><a href="#" onclick="accountReportsDentalClinicServices(this,event)">Dental Clinic Services</a></td>
+                      </tr>
+                      <?php } ?>
 
                     
 
@@ -5142,6 +6919,26 @@
                         <td>6</td>
                         <td><a href="#" onclick="viewAccountingReports(this,event)">Accounting Reports</a></td>
                       </tr>
+
+                      <tr class="pointer-cursor">
+                        <td>7</td>
+                        <td><a href="#" onclick="individualPatientFinances(this,event)">Individual Patient Finances</a></td>
+                      </tr>
+
+                      <?php if($health_facility_id == 44){ ?>
+                      <tr class="pointer-cursor">
+                        <td>8</td>
+                        <td><a href="#" onclick="viewRadiology(this,event)">Radiology</a></td>
+                      </tr>
+
+                      <tr class="pointer-cursor">
+                        <td>9</td>
+                        <td><a href="#" onclick="viewDentalClinicPayments(this,event)">Dental Clinic Payments</a></td>
+                      </tr>
+                      <?php } ?>
+
+
+                      
 
                       <?php }else if($health_facility_structure == "pharmacy"){ ?>
                        <tr class="pointer-cursor">
@@ -5244,6 +7041,16 @@
                 </div>
               </div>
 
+              <div class="card" id="view-radiology-payments-card" style="display: none;">
+                <div class="card-header">
+                  <button class="btn btn-round btn-warning" onclick="goBackFromViewRadiologyPaymentsCard(this,event)">Go Back</button>
+                  <h3 class="card-title" id="welcome-heading" style="text-transform: capitalize;">View Payments In: </h3>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
               <div class="card" id="view-laboratory-payments-card" style="display: none;">
                 <div class="card-header">
                   <button class="btn btn-round btn-warning" onclick="goBackFromViewLaboraroryPaymentsCard(this,event)">Go Back</button>
@@ -5312,6 +7119,37 @@
                 </div>
                 <div class="modal-body" id="modal-body">
                   
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-danger" data-dismiss="modal" >Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+
+          <div class="modal fade" data-backdrop="static" id="choose-patient-type-individual-finances" data-focus="true" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title">View individual finances of patients that are: </h4>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close" >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                  <p>
+                    <button class="btn btn-primary" onclick="viewFullPayingLaboratory(this,event)">Full Paying</button>
+                  </p>
+                  <p>
+                    <button class="btn btn-info" onclick="viewPartPayingLaboratory(this,event)">Part Paying</button>
+                  </p>
+                  <p>
+                    <button class="btn btn-warning" onclick="viewIndividualFinancesNonePaying(this,event)">None Paying</button>
+                  </p>
+                 
                 </div>
 
                 <div class="modal-footer">

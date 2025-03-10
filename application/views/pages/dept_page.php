@@ -1460,6 +1460,8 @@
                               $dept_slug = $dept->slug;        
                             } 
                             $sub_depts = $this->onehealth_model->getSubDeptsByDeptId($dept_id); 
+
+                            // var_dump($sub_depts);
                             $num = 0;
                               if(is_array($sub_depts)){
                                 foreach($sub_depts as $sub_dept){
@@ -1550,6 +1552,7 @@
                         <?php
                                     }
                                   } else{
+                                    if(($dept_id == 1 || $dept_id == 6 || $dept_id == 7 || $dept_id == 8 || $dept_id == 9 ) || $health_facility_id != 44 || ($health_facility_id == 44 && ($sub_dept_id == 32) || ($sub_dept_id == 55) )){
                                     $num++;
 
                         ?>
@@ -1583,7 +1586,8 @@
                           <?php } ?> 
                         </tr>
                         <?php 
-                              }     
+                              } 
+                              }    
                             }
                           }
                         }

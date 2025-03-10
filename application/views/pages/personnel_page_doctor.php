@@ -69,6 +69,7 @@
 
   function getTodayCurrentFullDate(){
     var date = new Date();
+    date.setDate(date.getDate() + 1);
 
     let month = (date.getMonth() + 1).toString().padStart(2, '0');
     let day = date.getDate().toString().padStart(2, '0');
@@ -79,7 +80,7 @@
 
    function getYesterdayCurrentFullDate(){
     var date = new Date();
-    date.setDate(date.getDate() - 1);
+    // date.setDate(date.getDate() - 1);
 
     // let day = date.getDate();
     // let month = date.getMonth() + 1;
@@ -89,6 +90,7 @@
 
     return `${year}-${month}-${day}`
   }
+
 
 
   function viewRadiologyResultReferralsFirstConsultation(elem,evt){
@@ -9576,9 +9578,9 @@
 
     elem = $(elem);
 
-    var start_date = getYesterdayCurrentFullDate();
-    var end_date = getTodayCurrentFullDate();
-    console.log(start_date + " " + end_date)
+    // var start_date = getYesterdayCurrentFullDate();
+    // var end_date = getTodayCurrentFullDate();
+    // console.log(start_date + " " + end_date)
     $(".spinner-overlay").show();
     
           
@@ -9589,7 +9591,7 @@
       type : "POST",
       responseType : "json",
       dataType : "json",
-      data : "show_records=true&start_date="+start_date+"&end_date="+end_date+"&ward_id="+ward_id,
+      data : "ward_id="+ward_id,
       success : function (response) {
         $(".spinner-overlay").hide();
         if(response.success && response.messages != ""){

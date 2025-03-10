@@ -50,6 +50,7 @@
 
   function getTodayCurrentFullDate(){
     var date = new Date();
+    date.setDate(date.getDate() + 1);
 
     let month = (date.getMonth() + 1).toString().padStart(2, '0');
     let day = date.getDate().toString().padStart(2, '0');
@@ -58,9 +59,9 @@
     return `${year}-${month}-${day}`
   }
 
-  function getYesterdayCurrentFullDate(){
+   function getYesterdayCurrentFullDate(){
     var date = new Date();
-    date.setDate(date.getDate() - 1);
+    // date.setDate(date.getDate() - 1);
 
     // let day = date.getDate();
     // let month = date.getMonth() + 1;
@@ -70,6 +71,7 @@
 
     return `${year}-${month}-${day}`
   }
+
  
   function copyText(text) {
     /* Get the text field */

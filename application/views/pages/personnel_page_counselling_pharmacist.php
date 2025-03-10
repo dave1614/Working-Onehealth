@@ -46,10 +46,38 @@
           return (this.length > n) ? this.substr(0, n-1) + '&hellip;' : this;
       };
   var user_info = [];
+  var edit_clinic_initiation_code = "";
+  var edit_ward_initiation_code = "";
   var selected_drugs = [];
+  var selected_drugs_edit_clinic = [];
+  var selected_drugs_edit_ward = [];
   var patient_facility_id = "";
   var registered_patient = false;
   var patient_disp_type = "normal";
+
+  function getTodayCurrentFullDate(){
+    var date = new Date();
+    date.setDate(date.getDate() + 1);
+
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
+
+   function getYesterdayCurrentFullDate(){
+    var date = new Date();
+    // date.setDate(date.getDate() - 1);
+
+    // let day = date.getDate();
+    // let month = date.getMonth() + 1;
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+
+    return `${year}-${month}-${day}`
+  }
 
   function goBackSelectDrugs (elem,evt) {
     user_info = [];
@@ -1356,6 +1384,1592 @@
     $("#perform-functions-card").show();
     $("#searched-patients-card").hide();
   }
+
+  
+
+  function selectTimeRangeClinicPatients(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/get_pending_transcribed_clinics_drugs'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#clinic-prescriptions-card .card-body").html(messages);
+          $("#clinic-prescriptions-card #clinic-prescriptions-table").DataTable();
+          
+          
+        }
+        else{
+         swal({
+            title: 'Ooops!',
+            text: "Sorry Something Went Wrong. Please Try Again",
+            type: 'warning'
+            
+          })
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function viewClinicPrescriptions(){
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+
+    $.ajax({
+      url : "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/get_pending_transcribed_clinics_drugs'); ?>",
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#perform-functions-card").hide();
+          $("#clinic-prescriptions-card .card-body").html(messages);
+          $("#clinic-prescriptions-card #clinic-prescriptions-table").DataTable();
+          $("#clinic-prescriptions-card").show();
+          
+        }else{
+          swal({
+            title: 'Ooops!',
+            text: "Sorry Something Went Wrong. Please Try Again",
+            type: 'warning'
+            
+          })
+        }
+      },error :function () {
+        $(".spinner-overlay").hide();
+         swal({
+          title: 'Error!',
+          text: "Sorry Something Went Wrong",
+          type: 'error'
+          
+        })
+      }
+    });
+    
+    
+  }
+
+  function goBackFromclinicPrescriptionsCard(elem, evt) {
+    $("#perform-functions-card").show();     
+    $("#clinic-prescriptions-card").hide();
+  }
+
+  function loadPendingClinicPatientsInfo(initiation_code){
+    if(initiation_code != ""){
+      edit_clinic_initiation_code = initiation_code
+      $(".spinner-overlay").show();
+      $.ajax({
+        url : "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/get_pending_transcribed_clinics_drugs_info'); ?>",
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "initiation_code="+initiation_code,
+        success : function (response) {
+          $(".spinner-overlay").hide();
+          if(response.success == true && response.messages != ""){
+            var messages = response.messages;
+            $("#clinic-prescriptions-card").hide();
+            $("#clinic-prescriptions-info-card .card-body").html(messages);
+            
+            
+
+            var drugs_info = response.drugs_info
+            console.log(drugs_info)
+
+            selected_drugs_edit_clinic = drugs_info
+
+            if(drugs_info.length > 0){
+              var selected_drugs_info_html = "<div class='container-fluid' style='margin-top: 40px;'>";
+              var j = 0;
+              <?php 
+                $attr = array('id' => 'prescription-edit-data-form');
+              ?>
+              selected_drugs_info_html += "<div id='prescription-edit-data-div'>";
+              for(var i = 0; i < drugs_info.length; i++){
+
+                var message = drugs_info[i].message;
+
+                j++;
+                // selected_drugs_info_html += j + ". ";
+
+                
+
+                var id = drugs_info[i].id;
+                var generic_name = drugs_info[i].generic_name;
+
+                selected_drugs_info_html += `<div class='rol-col' id='rol-col-${id}'>`;
+
+                selected_drugs_info_html += '<button onclick="deleteSelectedClinicDrug('+i+','+id+', `'+generic_name+'`, `'+initiation_code+'`)" title="Delete this selected drug" class="btn btn-danger"><i class="fas fa-trash"></i></button>';
+                if(message == 'okay'){
+
+                  
+                  var price = drugs_info[i].price;
+                  var brand_name = drugs_info[i].brand_name;
+                  
+                  var formulation = drugs_info[i].formulation;
+                  var strength = drugs_info[i].strength;
+                  var strength_unit = drugs_info[i].strength_unit;
+                  var main_store_quantity = drugs_info[i].main_store_quantity;
+                  var dispensary_quantity = drugs_info[i].dispensary_quantity;
+                  var unit = drugs_info[i].unit;
+
+                  var dosage = drugs_info[i].dosage;
+                  var frequency_num = drugs_info[i].frequency_num;
+                  var frequency_time = drugs_info[i].frequency_time;
+                  var duration_num = drugs_info[i].duration_num;
+                  var duration_time = drugs_info[i].duration_time;
+                  var quantity = drugs_info[i].quantity;
+
+                  quantity = (duration_num / frequency_num);
+                  quantity = dosage * quantity;
+
+                  quantity = Math.round(quantity * 100) / 100;
+
+                  
+
+                  price = Math.round(price * 100) / 100;
+                  price = parseFloat(price).toFixed(2);
+
+                  var total_price = price * quantity;
+
+                  
+                  
+                  
+                  selected_drugs_info_html += "<div class='form-row' data-id='"+id+"' style='border-bottom: 1px solid black; border-radius: 2px; margin-bottom: 10px;'>";
+
+                  
+                  selected_drugs_info_html += "<input type='hidden' class='price' value='"+price+"'>";
+                  selected_drugs_info_html += "<span class='main_store_quantity' style='display: none;'>"+main_store_quantity+"</span>";
+                  selected_drugs_info_html += "<span class='dispensary_quantity' style='display: none;'>"+dispensary_quantity+"</span>";
+                  selected_drugs_info_html += "<span class='unit' style='display: none;'>"+unit+"</span>";
+                  selected_drugs_info_html += "<div class='col-md-2 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Generic Name:</h5>";
+                  selected_drugs_info_html += "<p style='text-transform: capitalize;'>" + generic_name.trunc(20) + "</p>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-1 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Formulation:</h5>";
+                  selected_drugs_info_html += "<p style='text-transform: capitalize;'>" + formulation.trunc(20) + "</p>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-1 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Brand Name:</h5>";
+                  selected_drugs_info_html += "<p style='text-transform: capitalize;'>" + brand_name.trunc(25) + "</p>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-1 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Strength:</h5>";
+                  selected_drugs_info_html += "<p>" + strength + " " + strength_unit.trunc(4) +"</p>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-1 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Dosage:</h5>";
+                  selected_drugs_info_html += "<input value='"+dosage+"' class='form-control dosage' type='number' onkeyup='dosageEventEditClinic(this,event,"+i+")'>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-2 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Frequency:</h5>";
+                  selected_drugs_info_html += "<input value='"+frequency_num+"' class='form-control frequency_num' type='number' onkeyup='frequencyEventEditClinic1(this,event,"+i+")'>";
+                  selected_drugs_info_html += "<select class='form-control frequency_time' title='Select Frequency Time Range' onchange='frequencyEventEditClinic2(this,event,"+i+")'>";
+                  selected_drugs_info_html += `<option value='minutely' ${frequency_time == 'minutely' ? 'selected' : ''} >Minutely</option>`;
+                  selected_drugs_info_html += `<option value='hourly' ${frequency_time == 'hourly' ? 'selected' : ''} >Hourly</option>`;
+                  selected_drugs_info_html += `<option value='daily' ${frequency_time == 'daily' ? 'selected' : ''} >Daily</option>`;
+                  selected_drugs_info_html += `<option value='weekly' ${frequency_time == 'weekly' ? 'selected' : ''} >Weekly</option>`;
+                  selected_drugs_info_html += `<option value='monthly' ${frequency_time == 'monthly' ? 'selected' : ''} >Monthly</option>`;
+                  selected_drugs_info_html += `<option value='yearly' ${frequency_time == 'yearly' ? 'selected' : ''} >Yearly</option>`;
+                  selected_drugs_info_html += `<option value='nocte' ${frequency_time == 'nocte' ? 'selected' : ''} >Nocte</option>`;
+                  selected_drugs_info_html += `<option value='stat' ${frequency_time == 'stat' ? 'selected' : ''} >Stat</option>`;
+                  selected_drugs_info_html += "</select>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-2 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Duration:</h5>";
+                  selected_drugs_info_html += "<input value='"+duration_num+"' class='form-control duration_num' type='number' onkeyup='durationEventEditClinic1(this,event,"+i+")'>";
+                  selected_drugs_info_html += "<select class='form-control duration_time' data-style='btn btn-primary btn-round' title='Select Duration Time Range' onchange='durationEventEditClinic2(this,event,"+i+")'>";
+                  selected_drugs_info_html += `option value='minutes' ${duration_time == 'minutes' ? 'selected' : ''} >Minutes</option>`;
+                  selected_drugs_info_html += `<option value='hours' ${duration_time == 'hours' ? 'selected' : ''} >Hours</option>`;
+                  selected_drugs_info_html += `<option value='days' ${duration_time == 'days' ? 'selected' : ''} >Days</option>`;
+                  selected_drugs_info_html += `<option value='weeks' ${duration_time == 'weeks' ? 'selected' : ''} >Weeks</option>`;
+                  selected_drugs_info_html += `<option value='months' ${duration_time == 'months' ? 'selected' : ''} >Months</option>`;
+                  selected_drugs_info_html += `<option value='years' ${duration_time == 'years' ? 'selected' : ''} >Years</option>`;
+                  selected_drugs_info_html += "</select>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-2 form-group display-div'>";
+
+                  
+
+                  selected_drugs_info_html += "<p>Total Quantity: " + addCommas(parseFloat(quantity).toFixed(2)) + " " + unit+ "</p>";
+                  selected_drugs_info_html += "<p>Price Per Unit: " + addCommas(price) +"</p>";
+                  selected_drugs_info_html += "<p>Total Price: " + addCommas(total_price) +"</p>";
+
+                  if(!isNaN(main_store_quantity) && !isNaN(dispensary_quantity)){
+                    var total_store_quantity = parseFloat(main_store_quantity) + parseFloat(dispensary_quantity);
+                    console.log(total_store_quantity)
+                    if(quantity > total_store_quantity){
+                      selected_drugs_info_html += "<span class='text-warning' style='font-style: italic;'>Quantity Prescribed Exceeds Total Quantity In Drug Store Which Is " + addCommas(parseFloat(total_store_quantity).toFixed(2)) + " " + unit+ ". Please Remember To Restock Before Dispensing.</span>";
+                    }
+                  }
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "</div>";
+
+                }else{
+                  selected_drugs_info_html += "<div class='form-row' style='border-bottom: 1px solid black; border-radius: 2px; margin-bottom: 10px;'>";
+
+                  selected_drugs_info_html += message;
+
+                  selected_drugs_info_html += "</div>";
+                }
+                
+                selected_drugs_info_html += "</div>";  
+              }
+              selected_drugs_info_html += "</div>";
+
+              $("#clinic-prescriptions-info-card .card-body").append(selected_drugs_info_html)
+
+              $("#clinic-prescriptions-info-card").show();
+              $("#select-drugs-proceed-edit-clinic-btn-2").show();
+              
+            }
+            
+          }else{
+            swal({
+              title: 'Ooops!',
+              text: "Sorry Something Went Wrong. Please Try Again",
+              type: 'warning'
+              
+            })
+          }
+        },error :function () {
+          $(".spinner-overlay").hide();
+           swal({
+            title: 'Error!',
+            text: "Sorry Something Went Wrong",
+            type: 'error'
+            
+          })
+        }
+      });
+    }
+  }
+
+  function goBackFromclinicPrescriptionsInfoCard (elem, evt) {
+    $("#clinic-prescriptions-card").show();
+    
+    $("#clinic-prescriptions-info-card").hide();
+    $("#select-drugs-proceed-edit-clinic-btn-2").hide();
+  }
+
+  function deleteSelectedClinicDrug(index, id, generic_name, initiation_code){
+    console.log(index)
+    console.log(id)
+
+    
+    swal({
+      title: 'Warning',
+      text: `You are about to delete the clinic selection of <em class="text-primary">${generic_name}</em> for this user. This is irreversible. Are you sure you want to proceed?`,
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#9c27b0',
+      confirmButtonText: 'Yes Proceed!',
+      cancelButtonText: 'Cancel'
+    }).then(function(){
+      $(".spinner-overlay").show();
+      $.ajax({
+        url : "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/delete_pending_transcribed_clinics_drugs_info'); ?>",
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "initiation_code="+initiation_code+"&id="+id,
+        success : function (response) {
+          $(".spinner-overlay").hide();
+          if(response.success){
+
+            swal({
+              title: 'Success',
+              allowEscapeKey: false,
+              allowOutsideClick: false,
+              text: `You have successfully deleted the selection of <em class="text-primary">${generic_name}</em> for this user.`,
+              type: 'success'
+              
+            }).then(function(){
+              
+              // $(`#prescription-edit-data-div #rol-col-${id}`).remove();
+
+              if($(`#prescription-edit-data-div .rol-col`).length == 0){
+                $("#clinic-prescriptions-info-card").hide();
+                viewClinicPrescriptions()
+              }else{
+                loadPendingClinicPatientsInfo(initiation_code)
+              }
+              
+            });
+
+          }else{
+            swal({
+              title: 'Ooops!',
+              text: "Sorry Something Went Wrong. Please Try Again",
+              type: 'warning'
+              
+            })
+          }
+        },error :function () {
+          $(".spinner-overlay").hide();
+           swal({
+            title: 'Error!',
+            text: "Sorry Something Went Wrong",
+            type: 'error'
+            
+          })
+        }
+      });
+
+    });
+  }
+
+  function dosageEventEditClinic(elem,event,i){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode !== 13){
+      elem = $(elem);
+      var val = elem.val();
+      var dosage = elem.parent().parent().find(".dosage").val();
+      var frequency_num = elem.parent().parent().find(".frequency_num").val();
+      var frequency_time = elem.parent().parent().find(".frequency_time").val();
+      var duration_num = elem.parent().parent().find(".duration_num").val();
+      var duration_time = elem.parent().parent().find(".duration_time").val();
+      var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+      var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+      var unit = elem.parent().parent().find(".unit").html();
+
+      calculatePrescriptionEditClinic(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);
+      
+    }else{
+      selectDrugsProceedEditClinic2()
+    }
+  }
+
+  function frequencyEventEditClinic1(elem,event,i){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode !== 13){
+      elem = $(elem);
+      var val = elem.val();
+      var dosage = elem.parent().parent().find(".dosage").val();
+      var frequency_num = elem.parent().parent().find(".frequency_num").val();
+      var frequency_time = elem.parent().parent().find(".frequency_time").val();
+      var duration_num = elem.parent().parent().find(".duration_num").val();
+      var duration_time = elem.parent().parent().find(".duration_time").val();
+      var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+      var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+      var unit = elem.parent().parent().find(".unit").html();
+      if(frequency_time == "daily" || frequency_time == "weekly" || frequency_time == "monthly" || frequency_time == "yearly" || frequency_time == "nocte" || frequency_time == "stat"){
+        elem.parent().parent().find(".frequency_num").val("1");
+        frequency_num = 1;
+      }
+
+      calculatePrescriptionEditClinic(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);
+      
+    }else{
+      selectDrugsProceedEditClinic2()
+    }
+  }
+
+  function frequencyEventEditClinic2(elem,evt,i){
+    elem = $(elem);
+    var val = elem.val();
+    var dosage = elem.parent().parent().find(".dosage").val();
+    var frequency_num = elem.parent().parent().find(".frequency_num").val();
+    var frequency_time = elem.parent().parent().find(".frequency_time").val();
+    var duration_num = elem.parent().parent().find(".duration_num").val();
+    var duration_time = elem.parent().parent().find(".duration_time").val();
+    var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+    var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+    var unit = elem.parent().parent().find(".unit").html();
+
+    if(frequency_time == "daily" || frequency_time == "weekly" || frequency_time == "monthly" || frequency_time == "yearly" || frequency_time == "nocte" || frequency_time == "stat"){
+      elem.parent().parent().find(".frequency_num").val("1");
+      frequency_num = 1;
+    }
+
+    calculatePrescriptionEditClinic(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);
+  }
+
+  function durationEventEditClinic1(elem,event,i){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode !== 13){
+      elem = $(elem);
+      var val = elem.val();
+      var dosage = elem.parent().parent().find(".dosage").val();
+      var frequency_num = elem.parent().parent().find(".frequency_num").val();
+      var frequency_time = elem.parent().parent().find(".frequency_time").val();
+      var duration_num = elem.parent().parent().find(".duration_num").val();
+      var duration_time = elem.parent().parent().find(".duration_time").val();
+      var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+      var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+      var unit = elem.parent().parent().find(".unit").html();
+      if(frequency_time == "daily" || frequency_time == "weekly" || frequency_time == "monthly" || frequency_time == "yearly" || frequency_time == "nocte" || frequency_time == "stat"){
+        elem.parent().parent().find(".frequency_num").val("1");
+        frequency_num = 1;
+      }
+
+      calculatePrescriptionEditClinic(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);
+      
+    }else{
+      selectDrugsProceedEditClinic2()
+    }
+  }
+
+  function durationEventEditClinic2(elem,evt,i){
+    elem = $(elem);
+    var val = elem.val();
+    var dosage = elem.parent().parent().find(".dosage").val();
+    var frequency_num = elem.parent().parent().find(".frequency_num").val();
+    var frequency_time = elem.parent().parent().find(".frequency_time").val();
+    var duration_num = elem.parent().parent().find(".duration_num").val();
+    var duration_time = elem.parent().parent().find(".duration_time").val();
+    var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+    var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+    var unit = elem.parent().parent().find(".unit").html();
+
+    if(frequency_time == "daily" || frequency_time == "weekly" || frequency_time == "monthly" || frequency_time == "yearly" || frequency_time == "nocte" || frequency_time == "stat"){
+      elem.parent().parent().find(".frequency_num").val("1");
+      frequency_num = 1;
+    }
+
+    selectDrugsProceedEditClinic2(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);   
+  }
+
+  function calculatePrescriptionEditClinic (dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i) {
+    // console.log(main_store_quantity + " : " + dispensary_quantity);
+    if(dosage != "" && frequency_num != "" && frequency_time != "" && duration_num != "" && duration_time != ""){
+      // console.log(i)
+      var quantity = 0;
+      if(frequency_time == "nocte" || frequency_time == "stat"){
+        frequency_time = "daily";
+      }
+
+      if(frequency_time == "yearly" && duration_time == "years"){
+        
+      }else if(frequency_time == "monthly" && duration_time == "years"){
+        duration_num = 12 * duration_num;
+      }else if(frequency_time == "weekly" && duration_time == "years"){
+        duration_num = 12 * 4 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "years"){
+        duration_num = 12 * 28 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "years"){
+        duration_num = 12 * 28 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "years"){
+        duration_num = 12 * 28 * 24 * 60 * duration_num;
+      }else if(frequency_time == "monthly" && duration_time == "months"){
+        
+      }else if(frequency_time == "weekly" && duration_time == "months"){
+        duration_num = 4 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "months"){
+        duration_num = 28 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "months"){
+        duration_num = 28 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "months"){
+        duration_num = 28 * 24 * 60 * duration_num;
+      }else if(frequency_time == "weekly" && duration_time == "weeks"){
+        
+      }else if(frequency_time == "daily" && duration_time == "weeks"){
+        duration_num = 7 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "weeks"){
+        duration_num = 7 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "weeks"){
+        duration_num = 7 * 24 * 60 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "days"){
+        
+      }else if(frequency_time == "hourly" && duration_time == "days"){
+        duration_num =  24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "days"){
+        duration_num =  24 * 60 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "hours"){
+        
+      }else if(frequency_time == "minutely" && duration_time == "hours"){
+        duration_num =  60 * duration_num;
+      }else{
+        duration_num = 0;
+        frequency_num = 0;
+      }
+      
+
+      quantity = (duration_num / frequency_num);
+      quantity = dosage * quantity;
+
+      quantity = Math.round(quantity * 100) / 100;
+
+
+
+      if(!isNaN(quantity)){
+        var price = 0.00;
+
+        var me = $("#prescription-edit-data-div");
+        me.find(".form-row").each(function(index, el) {
+          var el = $(el);
+          
+          if(index == i){
+          
+            price = el.find(".price").val();
+          }
+        });
+        price = Math.round(price * 100) / 100;
+        price = parseFloat(price).toFixed(2);
+        if(price != null){
+          var total_price = price * quantity;
+          var html = "<p>Total Quantity: " + addCommas(parseFloat(quantity).toFixed(2)) + " " + unit+ "</p>";
+          html += "<p>Price Per Unit: " + addCommas(price) +"</p>";
+          html += "<p>Total Price: " + addCommas(total_price) +"</p>";
+          if(!isNaN(main_store_quantity) && !isNaN(dispensary_quantity)){
+            var total_store_quantity = parseFloat(main_store_quantity) + parseFloat(dispensary_quantity);
+            console.log(total_store_quantity)
+            if(quantity > total_store_quantity){
+              html += "<span class='text-warning' style='font-style: italic;'>Quantity Prescribed Exceeds Total Quantity In Drug Store Which Is " + addCommas(parseFloat(total_store_quantity).toFixed(2)) + " " + unit+ ". Please Remember To Restock Before Dispensing.</span>";
+            }
+          }
+          $("#prescription-edit-data-div .form-row").eq(i).find(".display-div").html(html);
+        }
+      }
+    }
+  }
+
+  function calculatePrescriptionEditClinic2 (dosage,frequency_num,frequency_time,duration_num,duration_time,i) {
+    // console.log(dosage)
+    if(dosage != "" && frequency_num != "" && frequency_time != "" && duration_num != "" && duration_time != ""){
+      // console.log(i)
+      var quantity = 0;
+      var ret = {};
+      if(frequency_time == "nocte" || frequency_time == "stat"){
+        frequency_time = "daily";
+      }
+
+      if(frequency_time == "yearly" && duration_time == "years"){
+        
+      }else if(frequency_time == "monthly" && duration_time == "years"){
+        duration_num = 12 * duration_num;
+      }else if(frequency_time == "weekly" && duration_time == "years"){
+        duration_num = 12 * 4 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "years"){
+        duration_num = 12 * 28 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "years"){
+        duration_num = 12 * 28 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "years"){
+        duration_num = 12 * 28 * 24 * 60 * duration_num;
+      }else if(frequency_time == "monthly" && duration_time == "months"){
+        
+      }else if(frequency_time == "weekly" && duration_time == "months"){
+        duration_num = 4 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "months"){
+        duration_num = 28 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "months"){
+        duration_num = 28 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "months"){
+        duration_num = 28 * 24 * 60 * duration_num;
+      }else if(frequency_time == "weekly" && duration_time == "weeks"){
+        
+      }else if(frequency_time == "daily" && duration_time == "weeks"){
+        duration_num = 7 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "weeks"){
+        duration_num = 7 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "weeks"){
+        duration_num = 7 * 24 * 60 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "days"){
+        
+      }else if(frequency_time == "hourly" && duration_time == "days"){
+        duration_num =  24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "days"){
+        duration_num =  24 * 60 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "hours"){
+        
+      }else if(frequency_time == "minutely" && duration_time == "hours"){
+        duration_num =  60 * duration_num;
+      }else{
+        duration_num = 0;
+        frequency_num = 0;
+      }
+      
+
+      quantity = (duration_num / frequency_num);
+      quantity = dosage * quantity;
+      quantity = Math.round(quantity * 100) / 100;
+
+      if(!isNaN(quantity)){
+
+        var price = 0.00;
+
+        var me = $("#prescription-edit-data-div");
+        me.find(".form-row").each(function(index, el) {
+          var el = $(el);
+          
+          if(index == i){
+          
+            price = el.find(".price").val();
+          }
+        });
+        price =  Math.round(price * 100) / 100;
+        if(price != null){
+          var total_price = price * quantity;
+          ret = {
+            'quantity' : quantity,
+            'total_price' : total_price
+          };
+        }
+      }
+
+      return ret;
+    }
+  }
+
+  function selectDrugsProceedEditClinic2 () {
+    
+    var me = $("#prescription-edit-data-div");
+    var form_data = {
+      initiation_code: edit_clinic_initiation_code,
+      drugs_info : []
+    };
+    
+    var number_of_drugs = me.find(".form-row").length
+    var drugs_info = [];
+    var num = 0;
+    var sum = 0;
+    var total_quantity = 0;
+
+    me.find(".form-row").each(function(index, el) {
+      var el = $(el);
+      var id = el.attr("data-id");
+      
+      var price = el.find(".price").val();
+      var dosage = el.find(".dosage").val();
+      var frequency_num = el.find(".frequency_num").val();
+      var frequency_time = el.find(".frequency_time").val();
+      var duration_num = el.find(".duration_num").val();
+      var duration_time = el.find(".duration_time").val();
+
+      var obj = {
+        id : id,
+        frequency_num : frequency_num,
+        frequency_time : frequency_time,
+        duration_num : duration_num,
+        duration_time : duration_time,
+        dosage : dosage,
+        price : price
+      };
+
+      drugs_info[index] = obj;
+
+      if(dosage != "" && frequency_num != "" && frequency_time != "" && duration_num != "" && duration_time != "" && price != ""){
+        num++;
+        var prescription_obj = calculatePrescriptionEditClinic2 (dosage,frequency_num,frequency_time,duration_num,duration_time,index);
+        console.log(prescription_obj)
+        if(prescription_obj != {}){
+          var quantity = prescription_obj.quantity;
+          var total_price = prescription_obj.total_price;
+
+          total_quantity += quantity;
+          sum += total_price;
+        }
+      }
+
+    });
+
+    form_data['drugs_info'] = drugs_info;
+
+    
+    // $.each(user_info, function(index, val) {
+    //    form_data[index] = val;
+    // });
+    console.log(form_data);
+    // console.log(JSON.stringify(form_data))
+
+    if(num == number_of_drugs){
+      swal({
+        title: 'Proceed?',
+        text: "<span class='text-primary' style='font-style: italic;'>"+ num +"</span> Drugs Prescription Info Has Been Entered With Total Quantity Of <span class='text-primary' style='font-style: italic;'>" + addCommas(total_quantity) + "</span> And Total Price Of <span class='text-primary' style='font-style: italic;'>" + addCommas(sum) + "</span>. Are You Sure You Want To Mark These Drugs As Transcribed?",
+        type: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, Proceed'
+      }).then((result) => {
+        
+        $(".spinner-overlay").show();
+        var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/mark_as_transcribed_clinics_drugs'); ?>";
+        $.ajax({
+          url : url,
+          type : "POST",
+          responseType : "json",
+          dataType : "json",
+          data : form_data,
+          success : function (response) {
+            console.log(response)
+            $(".spinner-overlay").hide();
+            if(response.success){
+              var text = "Prescription marked as transcribed successfully"
+              if(response.nfp){
+                text += ". This Patient Is A None Fee Paying Patient. Proceed To Dispensing And Dispatching Officer."
+              }
+              
+              $.notify({
+              message : text
+              },{
+                type : "success"  
+              });
+
+              document.location.reload();
+            }else{
+              swal({
+               title: 'Ooops',
+                text: "Something Went Wrong",
+                type: 'error'
+              })
+            }
+          },error : function () {
+            $(".spinner-overlay").hide();
+            swal({
+             title: 'Ooops',
+              text: "Something Went Wrong",
+              type: 'error'
+            })
+          } 
+        });
+      }); 
+    }else{
+      swal({
+        title: 'Warning! ',
+        text: "Every field must be entered to proceed",
+        type: 'error'
+      })
+    }
+  
+  }  
+
+
+  function selectTimeRangeWardPatients(elem,event){
+    elem = $(elem);
+    var start_date = elem.parent().find('.start-date').val();
+    var end_date = elem.parent().find('.end-date').val();
+    
+
+    console.log(start_date)
+    console.log(end_date)
+    
+    
+    $(".spinner-overlay").show();
+        
+    var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/get_pending_transcribed_wards_drugs'); ?>";
+    
+    $.ajax({
+      url : url,
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        console.log(response)
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#ward-prescriptions-card .card-body").html(messages);
+          $("#ward-prescriptions-card #ward-prescriptions-table").DataTable();
+          
+          
+        }
+        else{
+         swal({
+            title: 'Ooops!',
+            text: "Sorry Something Went Wrong. Please Try Again",
+            type: 'warning'
+            
+          })
+        }
+      },
+      error: function (jqXHR,textStatus,errorThrown) {
+        $(".spinner-overlay").hide();
+        $.notify({
+        message:"Sorry Something Went Wrong. Please Check Your Internet Connection And Try Again"
+        },{
+          type : "danger"  
+        });
+      }
+    });
+  }
+
+  function viewWardPrescriptions(){
+    
+
+    var start_date = getYesterdayCurrentFullDate();
+    var end_date = getTodayCurrentFullDate();
+    console.log(start_date + " " + end_date)
+    $(".spinner-overlay").show();
+
+    $.ajax({
+      url : "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/get_pending_transcribed_wards_drugs'); ?>",
+      type : "POST",
+      responseType : "json",
+      dataType : "json",
+      data : "show_records=true&start_date="+start_date+"&end_date="+end_date,
+      success : function (response) {
+        $(".spinner-overlay").hide();
+        if(response.success == true){
+          var messages = response.messages;
+          $("#perform-functions-card").hide();
+          $("#ward-prescriptions-card .card-body").html(messages);
+          $("#ward-prescriptions-card #ward-prescriptions-table").DataTable();
+          $("#ward-prescriptions-card").show();
+          
+        }else{
+          swal({
+            title: 'Ooops!',
+            text: "Sorry Something Went Wrong. Please Try Again",
+            type: 'warning'
+            
+          })
+        }
+      },error :function () {
+        $(".spinner-overlay").hide();
+         swal({
+          title: 'Error!',
+          text: "Sorry Something Went Wrong",
+          type: 'error'
+          
+        })
+      }
+    });
+    
+    
+  }
+
+  function goBackFromwardPrescriptionsCard(elem, evt) {
+    $("#perform-functions-card").show();     
+    $("#ward-prescriptions-card").hide();
+  }
+
+  function loadPendingWardPatientsInfo(initiation_code){
+    if(initiation_code != ""){
+      edit_ward_initiation_code = initiation_code
+      $(".spinner-overlay").show();
+      $.ajax({
+        url : "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/get_pending_transcribed_wards_drugs_info'); ?>",
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "initiation_code="+initiation_code,
+        success : function (response) {
+          $(".spinner-overlay").hide();
+          if(response.success == true && response.messages != ""){
+            var messages = response.messages;
+            $("#ward-prescriptions-card").hide();
+            $("#ward-prescriptions-info-card .card-body").html(messages);
+            
+            
+
+            var drugs_info = response.drugs_info
+            console.log(drugs_info)
+
+            selected_drugs_edit_ward = drugs_info
+
+            if(drugs_info.length > 0){
+              var selected_drugs_info_html = "<div class='container-fluid' style='margin-top: 40px;'>";
+              var j = 0;
+              <?php 
+                $attr = array('id' => 'prescription-edit-data-form');
+              ?>
+              selected_drugs_info_html += "<div id='prescription-edit-data-div'>";
+              for(var i = 0; i < drugs_info.length; i++){
+
+                var message = drugs_info[i].message;
+
+                j++;
+                // selected_drugs_info_html += j + ". ";
+
+                
+
+                var id = drugs_info[i].id;
+                var generic_name = drugs_info[i].generic_name;
+
+                selected_drugs_info_html += `<div class='rol-col' id='rol-col-${id}'>`;
+
+                selected_drugs_info_html += '<button onclick="deleteSelectedWardDrug('+i+','+id+', `'+generic_name+'`, `'+initiation_code+'`)" title="Delete this selected drug" class="btn btn-danger"><i class="fas fa-trash"></i></button>';
+                if(message == 'okay'){
+
+                  
+                  var price = drugs_info[i].price;
+                  var brand_name = drugs_info[i].brand_name;
+                  
+                  var formulation = drugs_info[i].formulation;
+                  var strength = drugs_info[i].strength;
+                  var strength_unit = drugs_info[i].strength_unit;
+                  var main_store_quantity = drugs_info[i].main_store_quantity;
+                  var dispensary_quantity = drugs_info[i].dispensary_quantity;
+                  var unit = drugs_info[i].unit;
+
+                  var dosage = drugs_info[i].dosage;
+                  var frequency_num = drugs_info[i].frequency_num;
+                  var frequency_time = drugs_info[i].frequency_time;
+                  var duration_num = drugs_info[i].duration_num;
+                  var duration_time = drugs_info[i].duration_time;
+                  var quantity = drugs_info[i].quantity;
+
+                  quantity = (duration_num / frequency_num);
+                  quantity = dosage * quantity;
+
+                  quantity = Math.round(quantity * 100) / 100;
+
+                  
+
+                  price = Math.round(price * 100) / 100;
+                  price = parseFloat(price).toFixed(2);
+
+                  var total_price = price * quantity;
+
+                  
+                  
+                  
+                  selected_drugs_info_html += "<div class='form-row' data-id='"+id+"' style='border-bottom: 1px solid black; border-radius: 2px; margin-bottom: 10px;'>";
+
+                  
+                  selected_drugs_info_html += "<input type='hidden' class='price' value='"+price+"'>";
+                  selected_drugs_info_html += "<span class='main_store_quantity' style='display: none;'>"+main_store_quantity+"</span>";
+                  selected_drugs_info_html += "<span class='dispensary_quantity' style='display: none;'>"+dispensary_quantity+"</span>";
+                  selected_drugs_info_html += "<span class='unit' style='display: none;'>"+unit+"</span>";
+                  selected_drugs_info_html += "<div class='col-md-2 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Generic Name:</h5>";
+                  selected_drugs_info_html += "<p style='text-transform: capitalize;'>" + generic_name.trunc(20) + "</p>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-1 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Formulation:</h5>";
+                  selected_drugs_info_html += "<p style='text-transform: capitalize;'>" + formulation.trunc(20) + "</p>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-1 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Brand Name:</h5>";
+                  selected_drugs_info_html += "<p style='text-transform: capitalize;'>" + brand_name.trunc(25) + "</p>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-1 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Strength:</h5>";
+                  selected_drugs_info_html += "<p>" + strength + " " + strength_unit.trunc(4) +"</p>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-1 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Dosage:</h5>";
+                  selected_drugs_info_html += "<input value='"+dosage+"' class='form-control dosage' type='number' onkeyup='dosageEventEditWard(this,event,"+i+")'>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-2 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Frequency:</h5>";
+                  selected_drugs_info_html += "<input value='"+frequency_num+"' class='form-control frequency_num' type='number' onkeyup='frequencyEventEditWard1(this,event,"+i+")'>";
+                  selected_drugs_info_html += "<select class='form-control frequency_time' title='Select Frequency Time Range' onchange='frequencyEventEditWard2(this,event,"+i+")'>";
+                  selected_drugs_info_html += `<option value='minutely' ${frequency_time == 'minutely' ? 'selected' : ''} >Minutely</option>`;
+                  selected_drugs_info_html += `<option value='hourly' ${frequency_time == 'hourly' ? 'selected' : ''} >Hourly</option>`;
+                  selected_drugs_info_html += `<option value='daily' ${frequency_time == 'daily' ? 'selected' : ''} >Daily</option>`;
+                  selected_drugs_info_html += `<option value='weekly' ${frequency_time == 'weekly' ? 'selected' : ''} >Weekly</option>`;
+                  selected_drugs_info_html += `<option value='monthly' ${frequency_time == 'monthly' ? 'selected' : ''} >Monthly</option>`;
+                  selected_drugs_info_html += `<option value='yearly' ${frequency_time == 'yearly' ? 'selected' : ''} >Yearly</option>`;
+                  selected_drugs_info_html += `<option value='nocte' ${frequency_time == 'nocte' ? 'selected' : ''} >Nocte</option>`;
+                  selected_drugs_info_html += `<option value='stat' ${frequency_time == 'stat' ? 'selected' : ''} >Stat</option>`;
+                  selected_drugs_info_html += "</select>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-2 form-group'>";
+                  selected_drugs_info_html += "<h5 style='font-weight: bold;'>Duration:</h5>";
+                  selected_drugs_info_html += "<input value='"+duration_num+"' class='form-control duration_num' type='number' onkeyup='durationEventEditWard1(this,event,"+i+")'>";
+                  selected_drugs_info_html += "<select class='form-control duration_time' data-style='btn btn-primary btn-round' title='Select Duration Time Range' onchange='durationEventEditWard2(this,event,"+i+")'>";
+                  selected_drugs_info_html += `option value='minutes' ${duration_time == 'minutes' ? 'selected' : ''} >Minutes</option>`;
+                  selected_drugs_info_html += `<option value='hours' ${duration_time == 'hours' ? 'selected' : ''} >Hours</option>`;
+                  selected_drugs_info_html += `<option value='days' ${duration_time == 'days' ? 'selected' : ''} >Days</option>`;
+                  selected_drugs_info_html += `<option value='weeks' ${duration_time == 'weeks' ? 'selected' : ''} >Weeks</option>`;
+                  selected_drugs_info_html += `<option value='months' ${duration_time == 'months' ? 'selected' : ''} >Months</option>`;
+                  selected_drugs_info_html += `<option value='years' ${duration_time == 'years' ? 'selected' : ''} >Years</option>`;
+                  selected_drugs_info_html += "</select>";
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "<div class='col-md-2 form-group display-div'>";
+
+                  
+
+                  selected_drugs_info_html += "<p>Total Quantity: " + addCommas(parseFloat(quantity).toFixed(2)) + " " + unit+ "</p>";
+                  selected_drugs_info_html += "<p>Price Per Unit: " + addCommas(price) +"</p>";
+                  selected_drugs_info_html += "<p>Total Price: " + addCommas(total_price) +"</p>";
+
+                  if(!isNaN(main_store_quantity) && !isNaN(dispensary_quantity)){
+                    var total_store_quantity = parseFloat(main_store_quantity) + parseFloat(dispensary_quantity);
+                    console.log(total_store_quantity)
+                    if(quantity > total_store_quantity){
+                      selected_drugs_info_html += "<span class='text-warning' style='font-style: italic;'>Quantity Prescribed Exceeds Total Quantity In Drug Store Which Is " + addCommas(parseFloat(total_store_quantity).toFixed(2)) + " " + unit+ ". Please Remember To Restock Before Dispensing.</span>";
+                    }
+                  }
+                  selected_drugs_info_html += "</div>";
+
+                  selected_drugs_info_html += "</div>";
+
+                }else{
+                  selected_drugs_info_html += "<div class='form-row' style='border-bottom: 1px solid black; border-radius: 2px; margin-bottom: 10px;'>";
+
+                  selected_drugs_info_html += message;
+
+                  selected_drugs_info_html += "</div>";
+                }
+                
+                selected_drugs_info_html += "</div>";  
+              }
+              selected_drugs_info_html += "</div>";
+
+              $("#ward-prescriptions-info-card .card-body").append(selected_drugs_info_html)
+
+              $("#ward-prescriptions-info-card").show();
+              $("#select-drugs-proceed-edit-ward-btn-2").show();
+              
+            }
+            
+          }else{
+            swal({
+              title: 'Ooops!',
+              text: "Sorry Something Went Wrong. Please Try Again",
+              type: 'warning'
+              
+            })
+          }
+        },error :function () {
+          $(".spinner-overlay").hide();
+           swal({
+            title: 'Error!',
+            text: "Sorry Something Went Wrong",
+            type: 'error'
+            
+          })
+        }
+      });
+    }
+  }
+
+  function goBackFromwardPrescriptionsInfoCard (elem, evt) {
+    $("#ward-prescriptions-card").show();
+    
+    $("#ward-prescriptions-info-card").hide();
+    $("#select-drugs-proceed-edit-ward-btn-2").hide();
+  }
+
+  function deleteSelectedWardDrug(index, id, generic_name, initiation_code){
+    console.log(index)
+    console.log(id)
+
+    
+    swal({
+      title: 'Warning',
+      text: `You are about to delete the ward selection of <em class="text-primary">${generic_name}</em> for this user. This is irreversible. Are you sure you want to proceed?`,
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#9c27b0',
+      confirmButtonText: 'Yes Proceed!',
+      cancelButtonText: 'Cancel'
+    }).then(function(){
+      $(".spinner-overlay").show();
+      $.ajax({
+        url : "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition. '/' .$fourth_addition.'/delete_pending_transcribed_wards_drugs_info'); ?>",
+        type : "POST",
+        responseType : "json",
+        dataType : "json",
+        data : "initiation_code="+initiation_code+"&id="+id,
+        success : function (response) {
+          $(".spinner-overlay").hide();
+          if(response.success){
+
+            swal({
+              title: 'Success',
+              allowEscapeKey: false,
+              allowOutsideClick: false,
+              text: `You have successfully deleted the selection of <em class="text-primary">${generic_name}</em> for this user.`,
+              type: 'success'
+              
+            }).then(function(){
+              
+              // $(`#prescription-edit-data-div #rol-col-${id}`).remove();
+
+              if($(`#prescription-edit-data-div .rol-col`).length == 0){
+                $("#ward-prescriptions-info-card").hide();
+                viewWardPrescriptions()
+              }else{
+                loadPendingWardPatientsInfo(initiation_code)
+              }
+              
+            });
+
+          }else{
+            swal({
+              title: 'Ooops!',
+              text: "Sorry Something Went Wrong. Please Try Again",
+              type: 'warning'
+              
+            })
+          }
+        },error :function () {
+          $(".spinner-overlay").hide();
+           swal({
+            title: 'Error!',
+            text: "Sorry Something Went Wrong",
+            type: 'error'
+            
+          })
+        }
+      });
+
+    });
+  }
+
+  function dosageEventEditWard(elem,event,i){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode !== 13){
+      elem = $(elem);
+      var val = elem.val();
+      var dosage = elem.parent().parent().find(".dosage").val();
+      var frequency_num = elem.parent().parent().find(".frequency_num").val();
+      var frequency_time = elem.parent().parent().find(".frequency_time").val();
+      var duration_num = elem.parent().parent().find(".duration_num").val();
+      var duration_time = elem.parent().parent().find(".duration_time").val();
+      var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+      var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+      var unit = elem.parent().parent().find(".unit").html();
+
+      calculatePrescriptionEditWard(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);
+      
+    }else{
+      selectDrugsProceedEditWard2()
+    }
+  }
+
+  function frequencyEventEditWard1(elem,event,i){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode !== 13){
+      elem = $(elem);
+      var val = elem.val();
+      var dosage = elem.parent().parent().find(".dosage").val();
+      var frequency_num = elem.parent().parent().find(".frequency_num").val();
+      var frequency_time = elem.parent().parent().find(".frequency_time").val();
+      var duration_num = elem.parent().parent().find(".duration_num").val();
+      var duration_time = elem.parent().parent().find(".duration_time").val();
+      var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+      var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+      var unit = elem.parent().parent().find(".unit").html();
+      if(frequency_time == "daily" || frequency_time == "weekly" || frequency_time == "monthly" || frequency_time == "yearly" || frequency_time == "nocte" || frequency_time == "stat"){
+        elem.parent().parent().find(".frequency_num").val("1");
+        frequency_num = 1;
+      }
+
+      calculatePrescriptionEditWard(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);
+      
+    }else{
+      selectDrugsProceedEditWard2()
+    }
+  }
+
+  function frequencyEventEditWard2(elem,evt,i){
+    elem = $(elem);
+    var val = elem.val();
+    var dosage = elem.parent().parent().find(".dosage").val();
+    var frequency_num = elem.parent().parent().find(".frequency_num").val();
+    var frequency_time = elem.parent().parent().find(".frequency_time").val();
+    var duration_num = elem.parent().parent().find(".duration_num").val();
+    var duration_time = elem.parent().parent().find(".duration_time").val();
+    var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+    var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+    var unit = elem.parent().parent().find(".unit").html();
+
+    if(frequency_time == "daily" || frequency_time == "weekly" || frequency_time == "monthly" || frequency_time == "yearly" || frequency_time == "nocte" || frequency_time == "stat"){
+      elem.parent().parent().find(".frequency_num").val("1");
+      frequency_num = 1;
+    }
+
+    calculatePrescriptionEditWard(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);
+  }
+
+  function durationEventEditWard1(elem,event,i){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode !== 13){
+      elem = $(elem);
+      var val = elem.val();
+      var dosage = elem.parent().parent().find(".dosage").val();
+      var frequency_num = elem.parent().parent().find(".frequency_num").val();
+      var frequency_time = elem.parent().parent().find(".frequency_time").val();
+      var duration_num = elem.parent().parent().find(".duration_num").val();
+      var duration_time = elem.parent().parent().find(".duration_time").val();
+      var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+      var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+      var unit = elem.parent().parent().find(".unit").html();
+      if(frequency_time == "daily" || frequency_time == "weekly" || frequency_time == "monthly" || frequency_time == "yearly" || frequency_time == "nocte" || frequency_time == "stat"){
+        elem.parent().parent().find(".frequency_num").val("1");
+        frequency_num = 1;
+      }
+
+      calculatePrescriptionEditWard(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);
+      
+    }else{
+      selectDrugsProceedEditWard2()
+    }
+  }
+
+  function durationEventEditWard2(elem,evt,i){
+    elem = $(elem);
+    var val = elem.val();
+    var dosage = elem.parent().parent().find(".dosage").val();
+    var frequency_num = elem.parent().parent().find(".frequency_num").val();
+    var frequency_time = elem.parent().parent().find(".frequency_time").val();
+    var duration_num = elem.parent().parent().find(".duration_num").val();
+    var duration_time = elem.parent().parent().find(".duration_time").val();
+    var main_store_quantity = elem.parent().parent().find(".main_store_quantity").html();
+    var dispensary_quantity = elem.parent().parent().find(".dispensary_quantity").html();
+    var unit = elem.parent().parent().find(".unit").html();
+
+    if(frequency_time == "daily" || frequency_time == "weekly" || frequency_time == "monthly" || frequency_time == "yearly" || frequency_time == "nocte" || frequency_time == "stat"){
+      elem.parent().parent().find(".frequency_num").val("1");
+      frequency_num = 1;
+    }
+
+    selectDrugsProceedEditWard2(dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i);   
+  }
+
+  function calculatePrescriptionEditWard (dosage,frequency_num,frequency_time,duration_num,duration_time,main_store_quantity,dispensary_quantity,unit,i) {
+    // console.log(main_store_quantity + " : " + dispensary_quantity);
+    if(dosage != "" && frequency_num != "" && frequency_time != "" && duration_num != "" && duration_time != ""){
+      // console.log(i)
+      var quantity = 0;
+      if(frequency_time == "nocte" || frequency_time == "stat"){
+        frequency_time = "daily";
+      }
+
+      if(frequency_time == "yearly" && duration_time == "years"){
+        
+      }else if(frequency_time == "monthly" && duration_time == "years"){
+        duration_num = 12 * duration_num;
+      }else if(frequency_time == "weekly" && duration_time == "years"){
+        duration_num = 12 * 4 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "years"){
+        duration_num = 12 * 28 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "years"){
+        duration_num = 12 * 28 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "years"){
+        duration_num = 12 * 28 * 24 * 60 * duration_num;
+      }else if(frequency_time == "monthly" && duration_time == "months"){
+        
+      }else if(frequency_time == "weekly" && duration_time == "months"){
+        duration_num = 4 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "months"){
+        duration_num = 28 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "months"){
+        duration_num = 28 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "months"){
+        duration_num = 28 * 24 * 60 * duration_num;
+      }else if(frequency_time == "weekly" && duration_time == "weeks"){
+        
+      }else if(frequency_time == "daily" && duration_time == "weeks"){
+        duration_num = 7 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "weeks"){
+        duration_num = 7 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "weeks"){
+        duration_num = 7 * 24 * 60 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "days"){
+        
+      }else if(frequency_time == "hourly" && duration_time == "days"){
+        duration_num =  24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "days"){
+        duration_num =  24 * 60 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "hours"){
+        
+      }else if(frequency_time == "minutely" && duration_time == "hours"){
+        duration_num =  60 * duration_num;
+      }else{
+        duration_num = 0;
+        frequency_num = 0;
+      }
+      
+
+      quantity = (duration_num / frequency_num);
+      quantity = dosage * quantity;
+
+      quantity = Math.round(quantity * 100) / 100;
+
+
+
+      if(!isNaN(quantity)){
+        var price = 0.00;
+
+        var me = $("#prescription-edit-data-div");
+        me.find(".form-row").each(function(index, el) {
+          var el = $(el);
+          
+          if(index == i){
+          
+            price = el.find(".price").val();
+          }
+        });
+        price = Math.round(price * 100) / 100;
+        price = parseFloat(price).toFixed(2);
+        if(price != null){
+          var total_price = price * quantity;
+          var html = "<p>Total Quantity: " + addCommas(parseFloat(quantity).toFixed(2)) + " " + unit+ "</p>";
+          html += "<p>Price Per Unit: " + addCommas(price) +"</p>";
+          html += "<p>Total Price: " + addCommas(total_price) +"</p>";
+          if(!isNaN(main_store_quantity) && !isNaN(dispensary_quantity)){
+            var total_store_quantity = parseFloat(main_store_quantity) + parseFloat(dispensary_quantity);
+            console.log(total_store_quantity)
+            if(quantity > total_store_quantity){
+              html += "<span class='text-warning' style='font-style: italic;'>Quantity Prescribed Exceeds Total Quantity In Drug Store Which Is " + addCommas(parseFloat(total_store_quantity).toFixed(2)) + " " + unit+ ". Please Remember To Restock Before Dispensing.</span>";
+            }
+          }
+          $("#prescription-edit-data-div .form-row").eq(i).find(".display-div").html(html);
+        }
+      }
+    }
+  }
+
+  function calculatePrescriptionEditWard2 (dosage,frequency_num,frequency_time,duration_num,duration_time,i) {
+    // console.log(dosage)
+    if(dosage != "" && frequency_num != "" && frequency_time != "" && duration_num != "" && duration_time != ""){
+      // console.log(i)
+      var quantity = 0;
+      var ret = {};
+      if(frequency_time == "nocte" || frequency_time == "stat"){
+        frequency_time = "daily";
+      }
+
+      if(frequency_time == "yearly" && duration_time == "years"){
+        
+      }else if(frequency_time == "monthly" && duration_time == "years"){
+        duration_num = 12 * duration_num;
+      }else if(frequency_time == "weekly" && duration_time == "years"){
+        duration_num = 12 * 4 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "years"){
+        duration_num = 12 * 28 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "years"){
+        duration_num = 12 * 28 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "years"){
+        duration_num = 12 * 28 * 24 * 60 * duration_num;
+      }else if(frequency_time == "monthly" && duration_time == "months"){
+        
+      }else if(frequency_time == "weekly" && duration_time == "months"){
+        duration_num = 4 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "months"){
+        duration_num = 28 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "months"){
+        duration_num = 28 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "months"){
+        duration_num = 28 * 24 * 60 * duration_num;
+      }else if(frequency_time == "weekly" && duration_time == "weeks"){
+        
+      }else if(frequency_time == "daily" && duration_time == "weeks"){
+        duration_num = 7 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "weeks"){
+        duration_num = 7 * 24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "weeks"){
+        duration_num = 7 * 24 * 60 * duration_num;
+      }else if(frequency_time == "daily" && duration_time == "days"){
+        
+      }else if(frequency_time == "hourly" && duration_time == "days"){
+        duration_num =  24 * duration_num;
+      }else if(frequency_time == "minutely" && duration_time == "days"){
+        duration_num =  24 * 60 * duration_num;
+      }else if(frequency_time == "hourly" && duration_time == "hours"){
+        
+      }else if(frequency_time == "minutely" && duration_time == "hours"){
+        duration_num =  60 * duration_num;
+      }else{
+        duration_num = 0;
+        frequency_num = 0;
+      }
+      
+
+      quantity = (duration_num / frequency_num);
+      quantity = dosage * quantity;
+      quantity = Math.round(quantity * 100) / 100;
+
+      if(!isNaN(quantity)){
+
+        var price = 0.00;
+
+        var me = $("#prescription-edit-data-div");
+        me.find(".form-row").each(function(index, el) {
+          var el = $(el);
+          
+          if(index == i){
+          
+            price = el.find(".price").val();
+          }
+        });
+        price =  Math.round(price * 100) / 100;
+        if(price != null){
+          var total_price = price * quantity;
+          ret = {
+            'quantity' : quantity,
+            'total_price' : total_price
+          };
+        }
+      }
+
+      return ret;
+    }
+  }
+
+  function selectDrugsProceedEditWard2 () {
+    
+    var me = $("#prescription-edit-data-div");
+    var form_data = {
+      initiation_code: edit_ward_initiation_code,
+      drugs_info : []
+    };
+    
+    var number_of_drugs = me.find(".form-row").length
+    var drugs_info = [];
+    var num = 0;
+    var sum = 0;
+    var total_quantity = 0;
+
+    me.find(".form-row").each(function(index, el) {
+      var el = $(el);
+      var id = el.attr("data-id");
+      
+      var price = el.find(".price").val();
+      var dosage = el.find(".dosage").val();
+      var frequency_num = el.find(".frequency_num").val();
+      var frequency_time = el.find(".frequency_time").val();
+      var duration_num = el.find(".duration_num").val();
+      var duration_time = el.find(".duration_time").val();
+
+      var obj = {
+        id : id,
+        frequency_num : frequency_num,
+        frequency_time : frequency_time,
+        duration_num : duration_num,
+        duration_time : duration_time,
+        dosage : dosage,
+        price : price
+      };
+
+      drugs_info[index] = obj;
+
+      if(dosage != "" && frequency_num != "" && frequency_time != "" && duration_num != "" && duration_time != "" && price != ""){
+        num++;
+        var prescription_obj = calculatePrescriptionEditWard2 (dosage,frequency_num,frequency_time,duration_num,duration_time,index);
+        console.log(prescription_obj)
+        if(prescription_obj != {}){
+          var quantity = prescription_obj.quantity;
+          var total_price = prescription_obj.total_price;
+
+          total_quantity += quantity;
+          sum += total_price;
+        }
+      }
+
+    });
+
+    form_data['drugs_info'] = drugs_info;
+
+    
+    // $.each(user_info, function(index, val) {
+    //    form_data[index] = val;
+    // });
+    console.log(form_data);
+    // console.log(JSON.stringify(form_data))
+
+    if(num == number_of_drugs){
+      swal({
+        title: 'Proceed?',
+        text: "<span class='text-primary' style='font-style: italic;'>"+ num +"</span> Drugs Prescription Info Has Been Entered With Total Quantity Of <span class='text-primary' style='font-style: italic;'>" + addCommas(total_quantity) + "</span> And Total Price Of <span class='text-primary' style='font-style: italic;'>" + addCommas(sum) + "</span>. Are You Sure You Want To Mark These Drugs As Transcribed?",
+        type: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, Proceed'
+      }).then((result) => {
+        
+        $(".spinner-overlay").show();
+        var url = "<?php echo site_url('onehealth/index/'.$addition.'/'.$second_addition.'/'.$third_addition.'/'.$fourth_addition.'/mark_as_transcribed_wards_drugs'); ?>";
+        $.ajax({
+          url : url,
+          type : "POST",
+          responseType : "json",
+          dataType : "json",
+          data : form_data,
+          success : function (response) {
+            console.log(response)
+            $(".spinner-overlay").hide();
+            if(response.success){
+              var text = "Prescription marked as transcribed successfully"
+              if(response.nfp){
+                text += ". This Patient Is A None Fee Paying Patient. Proceed To Dispensing And Dispatching Officer."
+              }
+              
+              $.notify({
+              message : text
+              },{
+                type : "success"  
+              });
+
+              document.location.reload();
+            }else{
+              swal({
+               title: 'Ooops',
+                text: "Something Went Wrong",
+                type: 'error'
+              })
+            }
+          },error : function () {
+            $(".spinner-overlay").hide();
+            swal({
+             title: 'Ooops',
+              text: "Something Went Wrong",
+              type: 'error'
+            })
+          } 
+        });
+      }); 
+    }else{
+      swal({
+        title: 'Warning! ',
+        text: "Every field must be entered to proceed",
+        type: 'error'
+      })
+    }
+  
+  }  
+
+
+
 </script>    
       <div class="spinner-overlay" style="display: none;">
         <div class="spinner-well">
@@ -1385,6 +2999,49 @@
           <div class="row">
               
             <div class="col-md-12">
+
+              <div class="card" id="ward-prescriptions-info-card" style="display: none;">
+                <div class="card-header">
+                  <h3 class="card-title">Ward prescription pending transcription</h3>
+                  <button onclick="goBackFromwardPrescriptionsInfoCard(this,event)" class="btn btn-round btn-warning">Go Back</button>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="ward-prescriptions-card" style="display: none;">
+                <div class="card-header">
+                  <h3 class="card-title">Ward prescriptions pending transcription</h3>
+                  <button onclick="goBackFromwardPrescriptionsCard(this,event)" class="btn btn-round btn-warning">Go Back</button>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+
+              
+              <div class="card" id="clinic-prescriptions-info-card" style="display: none;">
+                <div class="card-header">
+                  <h3 class="card-title">Clinic prescription pending transcription</h3>
+                  <button onclick="goBackFromclinicPrescriptionsInfoCard(this,event)" class="btn btn-round btn-warning">Go Back</button>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
+              <div class="card" id="clinic-prescriptions-card" style="display: none;">
+                <div class="card-header">
+                  <h3 class="card-title">Clinic prescriptions pending transcription</h3>
+                  <button onclick="goBackFromclinicPrescriptionsCard(this,event)" class="btn btn-round btn-warning">Go Back</button>
+                </div>
+                <div class="card-body">
+
+                </div>
+              </div>
+
 
               <div class="card" id="edit-patient-info-card" style="display: none;">
                 <div class="card-header">
@@ -1621,6 +3278,8 @@
                           <td>2</td>
                           <td onclick="searchPatients(this,event)">Search Patient</td>
                         </tr>
+
+                       
                         
                         <tr>
                           <td>3</td>
@@ -1658,17 +3317,26 @@
                           <td>2</td>
                           <td onclick="searchPatients(this,event)">Search Patient</td>
                         </tr>
-                        <tr>
+                         <tr>
                           <td>3</td>
+                          <td onclick="viewClinicPrescriptions()">View Clinic Prescriptions</td>
+                        </tr>
+
+                        <tr>
+                          <td>4</td>
+                          <td onclick="viewWardPrescriptions(this,event)">View Ward Prescriptions</td>
+                        </tr>
+                        <tr>
+                          <td>5</td>
                           <td onclick="errorRegister(this,event)" style="text-transform: capitalize;">View & Update error/occurrence register</td>
                         </tr>
                         <tr>
-                          <td>4</td>
+                          <td>6</td>
                           <td onclick="poisonRegister(this,event)" style="text-transform: capitalize;">View Poison register</td>
                         </tr>
                         
                         <tr>
-                          <td>5</td>
+                          <td>7</td>
                           <td onclick="viewStoreRecords(this,event)" style="text-transform: capitalize;">View Store Records</td>
                         </tr>
                         <!-- <tr>
@@ -1697,6 +3365,20 @@
             <div class="" style="display: inline-block; height: 24px; position: absolute; top: 16px; left: 16px; width: 24px;">
               <i class="fa fa-plus" style="font-size: 25px; font-weight: normal; color: #fff;" aria-hidden="true"></i>
 
+            </div>
+          </div>
+
+          
+
+          <div id="select-drugs-proceed-edit-ward-btn-2" onclick="selectDrugsProceedEditWard2()" rel="tooltip" data-toggle="tooltip" title="Proceed" style="background: #9c27b0; cursor: pointer; position: fixed; bottom: 0; right: 0;  border-radius: 50%; cursor: pointer; display: none; fill: #fff; height: 56px; outline: none; overflow: hidden; margin-bottom: 24px; margin-right: 24px; text-align: center; width: 56px; z-index: 4000;box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);">
+            <div class="" style="display: inline-block; height: 24px; position: absolute; top: 16px; left: 16px; width: 24px;">
+              <i class="material-icons" style="font-size: 25px; font-weight: normal; color: #fff;" aria-hidden="true">arrow_forward</i>
+            </div>
+          </div>
+
+          <div id="select-drugs-proceed-edit-clinic-btn-2" onclick="selectDrugsProceedEditClinic2()" rel="tooltip" data-toggle="tooltip" title="Proceed" style="background: #9c27b0; cursor: pointer; position: fixed; bottom: 0; right: 0;  border-radius: 50%; cursor: pointer; display: none; fill: #fff; height: 56px; outline: none; overflow: hidden; margin-bottom: 24px; margin-right: 24px; text-align: center; width: 56px; z-index: 4000;box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);">
+            <div class="" style="display: inline-block; height: 24px; position: absolute; top: 16px; left: 16px; width: 24px;">
+              <i class="material-icons" style="font-size: 25px; font-weight: normal; color: #fff;" aria-hidden="true">arrow_forward</i>
             </div>
           </div>
 
